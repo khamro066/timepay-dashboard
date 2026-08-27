@@ -23,8 +23,14 @@ export default function Login() {
       const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { username, password })
       login(res.data.access_token)
       navigate('/')
-    } catch {
-      setError('Invalid username or password')
+    } catch (err) {
+      if (!err.response) {
+        setError("Can't reach the server")
+      } else if (err.response.status === 401) {
+        setError('Invalid username or password')
+      } else {
+        setError('Something went wrong')
+      }
       setShakeKey((k) => k + 1)
     } finally {
       setLoading(false)
