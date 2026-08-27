@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Clock, UserCheck, Users, UserX } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import PeriodTabs from '../components/PeriodTabs'
 import ScoreBadge from '../components/ScoreBadge'
@@ -27,6 +28,7 @@ const TOP_LABEL = {
 
 export default function Dashboard() {
   const api = useApi()
+  const navigate = useNavigate()
   const [period, setPeriod] = useState('Today')
   const [stats, setStats] = useState(null)
   const [topFive, setTopFive] = useState([])
@@ -118,7 +120,8 @@ export default function Dashboard() {
                 transition={{ delay: 0.05 * i, duration: 0.2 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-default"
+                onClick={() => navigate(`/employees/${emp.employee_id}`)}
+                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <span className="w-6 h-6 shrink-0 flex items-center justify-center rounded-full bg-violet-500/20 text-violet-300 text-xs font-semibold">

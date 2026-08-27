@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { ArrowUpDown } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import PeriodTabs from '../components/PeriodTabs'
 import RankingChart from '../components/RankingChart'
@@ -32,6 +33,7 @@ function fmtPct(value) {
 
 export default function Ranking() {
   const api = useApi()
+  const navigate = useNavigate()
   const [period, setPeriod] = useState('Month')
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -146,7 +148,9 @@ export default function Ranking() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(i * 0.02, 0.4), duration: 0.2 }}
                     whileHover={{ scale: 1.01 }}
-                    className={`border-b border-white/5 last:border-0 cursor-default ${i < 10 ? 'bg-violet-500/[0.04]' : ''}`}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => navigate(`/employees/${row.employee_id}`)}
+                    className={`border-b border-white/5 last:border-0 cursor-pointer ${i < 10 ? 'bg-violet-500/[0.04]' : ''}`}
                   >
                     <td className="px-4 py-3 text-white/40">{i + 1}</td>
                     <td className="px-4 py-3 text-white font-medium whitespace-nowrap">{row.full_name}</td>

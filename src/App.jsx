@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Dashboard from './pages/Dashboard'
+import EmployeeDetail from './pages/EmployeeDetail'
 import Employees from './pages/Employees'
 import Login from './pages/Login'
 import Ranking from './pages/Ranking'
@@ -27,6 +28,7 @@ function AppRoutes() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/employees" element={<Employees />} />
+        <Route path="/employees/:id" element={<EmployeeDetail />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

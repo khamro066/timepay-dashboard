@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import ScoreBadge from '../components/ScoreBadge'
 
@@ -13,6 +14,7 @@ function last30Days() {
 
 export default function Employees() {
   const api = useApi()
+  const navigate = useNavigate()
   const [data, setData] = useState([])
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
@@ -83,7 +85,8 @@ export default function Employees() {
             transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.2 }}
             whileHover={{ scale: 1.03, filter: 'brightness(1.1)' }}
             whileTap={{ scale: 0.96 }}
-            className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-4 shadow-lg shadow-black/20"
+            onClick={() => navigate(`/employees/${emp.employee_id}`)}
+            className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-4 shadow-lg shadow-black/20 cursor-pointer"
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0">
