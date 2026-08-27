@@ -99,77 +99,79 @@ export default function Ranking() {
 
       {error && <p className="text-red-400 mb-4 text-sm">{error}</p>}
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25 }}
-        className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-5 shadow-lg shadow-black/20 mb-6"
-      >
-        <h2 className="text-white font-semibold mb-4">Top 15 by score</h2>
-        {!loading && topByScore.length > 0 && <RankingChart data={topByScore} />}
-        {!loading && topByScore.length === 0 && (
-          <p className="text-white/40 text-sm py-4">No data for this period.</p>
-        )}
-      </motion.div>
+      <div className={`transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-5 shadow-lg shadow-black/20 mb-6"
+        >
+          <h2 className="text-white font-semibold mb-4">Top 15 by score</h2>
+          {topByScore.length > 0 && <RankingChart data={topByScore} />}
+          {topByScore.length === 0 && (
+            <p className="text-white/40 text-sm py-4">No data for this period.</p>
+          )}
+        </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.25 }}
-        className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface shadow-lg shadow-black/20 overflow-hidden"
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left px-4 py-3 text-white/40 font-medium">#</th>
-                {COLUMNS.map((col) => (
-                  <th
-                    key={col.key}
-                    onClick={() => toggleSort(col.key)}
-                    className="text-left px-4 py-3 text-white/40 font-medium cursor-pointer select-none hover:text-white/70 transition-colors whitespace-nowrap"
-                  >
-                    <span className="inline-flex items-center gap-1">
-                      {col.label}
-                      {sort.key === col.key && <ArrowUpDown className="w-3 h-3" />}
-                    </span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((row, i) => (
-                <motion.tr
-                  key={row.employee_id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(i * 0.02, 0.4), duration: 0.2 }}
-                  whileHover={{ scale: 1.01 }}
-                  className={`border-b border-white/5 last:border-0 cursor-default ${i < 10 ? 'bg-violet-500/[0.04]' : ''}`}
-                >
-                  <td className="px-4 py-3 text-white/40">{i + 1}</td>
-                  <td className="px-4 py-3 text-white font-medium whitespace-nowrap">{row.full_name}</td>
-                  <td className="px-4 py-3 text-white/60 whitespace-nowrap">{row.department}</td>
-                  <td className="px-4 py-3 text-white/60">{fmtPct(row.attendance_rate)}</td>
-                  <td className="px-4 py-3 text-white/60">{fmtPct(row.punctuality_rate)}</td>
-                  <td className="px-4 py-3">
-                    <ScoreBadge score={row.overall_score} />
-                  </td>
-                  <td className="px-4 py-3 text-white/60">{row.late_days}</td>
-                  <td className="px-4 py-3 text-white/60">{row.absent_days}</td>
-                </motion.tr>
-              ))}
-              {!loading && sorted.length === 0 && (
-                <tr>
-                  <td colSpan={COLUMNS.length + 1} className="px-4 py-8 text-center text-white/40">
-                    No data for this period.
-                  </td>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.25 }}
+          className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface shadow-lg shadow-black/20 overflow-hidden"
+        >
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/5">
+                  <th className="text-left px-4 py-3 text-white/40 font-medium">#</th>
+                  {COLUMNS.map((col) => (
+                    <th
+                      key={col.key}
+                      onClick={() => toggleSort(col.key)}
+                      className="text-left px-4 py-3 text-white/40 font-medium cursor-pointer select-none hover:text-white/70 transition-colors whitespace-nowrap"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        {col.label}
+                        {sort.key === col.key && <ArrowUpDown className="w-3 h-3" />}
+                      </span>
+                    </th>
+                  ))}
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </motion.div>
+              </thead>
+              <tbody>
+                {sorted.map((row, i) => (
+                  <motion.tr
+                    key={row.employee_id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.02, 0.4), duration: 0.2 }}
+                    whileHover={{ scale: 1.01 }}
+                    className={`border-b border-white/5 last:border-0 cursor-default ${i < 10 ? 'bg-violet-500/[0.04]' : ''}`}
+                  >
+                    <td className="px-4 py-3 text-white/40">{i + 1}</td>
+                    <td className="px-4 py-3 text-white font-medium whitespace-nowrap">{row.full_name}</td>
+                    <td className="px-4 py-3 text-white/60 whitespace-nowrap">{row.department}</td>
+                    <td className="px-4 py-3 text-white/60">{fmtPct(row.attendance_rate)}</td>
+                    <td className="px-4 py-3 text-white/60">{fmtPct(row.punctuality_rate)}</td>
+                    <td className="px-4 py-3">
+                      <ScoreBadge score={row.overall_score} />
+                    </td>
+                    <td className="px-4 py-3 text-white/60">{row.late_days}</td>
+                    <td className="px-4 py-3 text-white/60">{row.absent_days}</td>
+                  </motion.tr>
+                ))}
+                {sorted.length === 0 && (
+                  <tr>
+                    <td colSpan={COLUMNS.length + 1} className="px-4 py-8 text-center text-white/40">
+                      No data for this period.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      </div>
     </div>
   )
 }
