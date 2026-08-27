@@ -1,0 +1,109 @@
+import { motion } from 'framer-motion'
+import { Search } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { useApi } from '../api/useApi'
+import ScoreBadge from '../components/ScoreBadge'
+
+function last30Days() {
+  const end = new Date()
+  const start = new Date(end)
+  start.setDate(start.getDate() - 29)
+  return { date_from: start.toISOString().slice(0, 10), date_to: end.toISOString().slice(0, 10) }
+}
+
+export default function Employees() {
+  const api = useApi()
+  const [data, setData] = useState([])
+  const [query, setQuery] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function load() {
+      setLoading(true)
+      setError('')
+      try {
+        const { date_from, date_to } = last30Days()
+        const res = await api.get('/api/ranking', { params: { date_from, date_to } })
+        if (!cancelled) setData(res.data)
+      } catch {
+        if (!cancelled) setError('Could not load employees.')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [api])
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return data
+    return data.filter(
+      (e) => e.full_name?.toLowerCase().includes(q) || e.department?.toLowerCase().includes(q),
+    )
+  }, [data, query])
+
+  return (
+    <div>
+      <motion.h1
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-2xl font-bold text-white mb-1"
+      >
+        Employees
+      </motion.h1>
+      <p className="text-white/40 text-sm mb-4">
+        {filtered.length} of {data.length} · last 30 days
+      </p>
+
+      {error && <p className="text-red-400 mb-4 text-sm">{error}</p>}
+
+      <div className="relative mb-6 max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search name or department..."
+          className="w-full rounded-xl bg-white/5 border border-white/10 pl-10 pr-3 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500 transition"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map((emp, i) => (
+          <motion.div
+            key={emp.employee_id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.2 }}
+            whileHover={{ scale: 1.03, filter: 'brightness(1.1)' }}
+            whileTap={{ scale: 0.96 }}
+            className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-4 shadow-lg shadow-black/20"
+          >
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="min-w-0">
+                <p className="text-white font-medium truncate">{emp.full_name}</p>
+                <p className="text-white/40 text-xs truncate">
+                  {emp.department} · {emp.position}
+                </p>
+              </div>
+              <ScoreBadge score={emp.overall_score} />
+            </div>
+            <div className="flex gap-4 mt-3 text-xs text-white/50">
+              <span>Late: {emp.late_days}</span>
+              <span>Absent: {emp.absent_days}</span>
+            </div>
+          </motion.div>
+        ))}
+        {!loading && filtered.length === 0 && (
+          <p className="text-white/40 text-sm col-span-full text-center py-8">No employees found.</p>
+        )}
+      </div>
+    </div>
+  )
+}
