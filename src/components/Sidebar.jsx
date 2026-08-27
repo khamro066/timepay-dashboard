@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { LayoutDashboard, LogOut, Menu, Trophy, Users, X } from 'lucide-react'
+import { Building2, LayoutDashboard, LogOut, Menu, Trophy, Users, X } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/ranking', label: 'Ranking', icon: Trophy, end: false },
   { to: '/employees', label: 'Employees', icon: Users, end: false },
+  { to: '/departments', label: "Bo'limlar", icon: Building2, end: false },
 ]
 
 export default function Sidebar() {

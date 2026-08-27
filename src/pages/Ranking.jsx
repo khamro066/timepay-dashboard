@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
-import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import PeriodTabs from '../components/PeriodTabs'
 import RankingChart from '../components/RankingChart'
@@ -34,6 +34,8 @@ function fmtPct(value) {
 export default function Ranking() {
   const api = useApi()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const department = searchParams.get('department')
   const [period, setPeriod] = useState('Month')
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -48,7 +50,9 @@ export default function Ranking() {
       setError('')
       try {
         const { date_from, date_to } = getDateRange(period)
-        const res = await api.get('/api/ranking', { params: { date_from, date_to } })
+        const params = { date_from, date_to }
+        if (department) params.department = department
+        const res = await api.get('/api/ranking', { params })
         if (!cancelled) setData(res.data)
       } catch {
         if (!cancelled) setError('Could not load ranking data.')
@@ -61,7 +65,15 @@ export default function Ranking() {
     return () => {
       cancelled = true
     }
-  }, [api, period])
+  }, [api, period, department])
+
+  function clearDepartmentFilter() {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('department')
+      return next
+    })
+  }
 
   const sorted = useMemo(() => {
     return [...data].sort((a, b) => {
@@ -97,7 +109,23 @@ export default function Ranking() {
       </motion.h1>
       <p className="text-white/40 text-sm mb-4">{data.length} employees</p>
 
-      <PeriodTabs period={period} onChange={setPeriod} />
+      <div className="flex items-center gap-3 flex-wrap">
+        <PeriodTabs period={period} onChange={setPeriod} />
+        {department && (
+          <motion.button
+            type="button"
+            onClick={clearDepartmentFilter}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-flex items-center gap-1.5 mb-6 px-3 py-1.5 rounded-lg bg-violet-600/20 border border-violet-500/30 text-violet-200 text-sm"
+          >
+            {department}
+            <X className="w-3.5 h-3.5" />
+          </motion.button>
+        )}
+      </div>
 
       {error && <p className="text-red-400 mb-4 text-sm">{error}</p>}
 
