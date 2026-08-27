@@ -2,15 +2,17 @@ import axios from 'axios'
 import { motion } from 'framer-motion'
 import { Loader2, Lock, User } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
+  const { t } = useTranslation()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [errorKey, setErrorKey] = useState('')
   const [shakeKey, setShakeKey] = useState(0)
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -18,18 +20,18 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
-    setError('')
+    setErrorKey('')
     try {
       const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { username, password })
       login(res.data.access_token)
       navigate('/')
     } catch (err) {
       if (!err.response) {
-        setError("Can't reach the server")
+        setErrorKey('login.errorNetwork')
       } else if (err.response.status === 401) {
-        setError('Invalid username or password')
+        setErrorKey('login.errorInvalid')
       } else {
-        setError('Something went wrong')
+        setErrorKey('login.errorGeneric')
       }
       setShakeKey((k) => k + 1)
     } finally {
@@ -64,11 +66,11 @@ export default function Login() {
         transition={{ duration: shakeKey > 0 ? 0.4 : 0.3 }}
         className="relative z-10 w-full max-w-sm rounded-2xl bg-gradient-to-b from-surface-light to-surface p-8 shadow-2xl shadow-black/40 border border-white/5"
       >
-        <h1 className="text-2xl font-semibold text-white mb-1">Welcome back</h1>
-        <p className="text-white/50 text-sm mb-6">Sign in to Timepay Analytics</p>
+        <h1 className="text-2xl font-semibold text-white mb-1">{t('login.title')}</h1>
+        <p className="text-white/50 text-sm mb-6">{t('login.subtitle')}</p>
 
         <label htmlFor="username" className="block text-sm text-white/70 mb-1">
-          Username
+          {t('login.username')}
         </label>
         <div className="relative mb-4">
           <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
@@ -84,7 +86,7 @@ export default function Login() {
         </div>
 
         <label htmlFor="password" className="block text-sm text-white/70 mb-1">
-          Password
+          {t('login.password')}
         </label>
         <div className="relative mb-2">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
@@ -100,13 +102,13 @@ export default function Login() {
           />
         </div>
 
-        {error && (
+        {errorKey && (
           <motion.p
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-red-400 text-sm mb-2"
           >
-            {error}
+            {t(errorKey)}
           </motion.p>
         )}
 
@@ -118,7 +120,7 @@ export default function Login() {
           transition={{ duration: 0.15 }}
           className="w-full mt-4 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 py-2.5 text-white font-medium flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg shadow-violet-600/20"
         >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign in'}
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('login.signIn')}
         </motion.button>
       </motion.form>
     </div>

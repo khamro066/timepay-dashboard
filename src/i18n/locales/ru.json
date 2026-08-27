@@ -1,0 +1,86 @@
+{
+  "nav": {
+    "brand": "Timepay",
+    "brandSubtitle": "Аналитика",
+    "dashboard": "Панель управления",
+    "ranking": "Рейтинг",
+    "employees": "Сотрудники",
+    "departments": "Отделы",
+    "logout": "Выйти"
+  },
+  "period": {
+    "today": "Сегодня",
+    "week": "Неделя",
+    "month": "Месяц"
+  },
+  "login": {
+    "title": "С возвращением",
+    "subtitle": "Войдите в Timepay Analytics",
+    "username": "Имя пользователя",
+    "password": "Пароль",
+    "signIn": "Войти",
+    "errorInvalid": "Неверное имя пользователя или пароль",
+    "errorNetwork": "Не удалось подключиться к серверу",
+    "errorGeneric": "Что-то пошло не так"
+  },
+  "dashboard": {
+    "barchasi": "Всего",
+    "ishda": "На месте",
+    "kech": "Опоздали",
+    "ishdaEmas": "Отсутствуют",
+    "topToday": "Топ 5 сегодня",
+    "topWeek": "Топ 5 за неделю",
+    "topMonth": "Топ 5 за месяц",
+    "noData": "Нет данных за этот период.",
+    "loadError": "Не удалось загрузить данные панели управления."
+  },
+  "ranking": {
+    "employeeCount": "{{count}} сотрудников",
+    "colName": "Имя",
+    "colDepartment": "Отдел",
+    "colAttendance": "Посещаемость",
+    "colPunctuality": "Пунктуальность",
+    "colScore": "Балл",
+    "colLate": "Опоздания",
+    "colAbsent": "Отсутствия",
+    "top15": "Топ 15 по баллу",
+    "noData": "Нет данных за этот период.",
+    "loadError": "Не удалось загрузить данные рейтинга."
+  },
+  "employees": {
+    "countSubtitle": "{{filtered}} из {{total}} · последние 30 дней",
+    "searchPlaceholder": "Поиск по имени или отделу...",
+    "late": "Опоздания",
+    "absent": "Отсутствия",
+    "notFound": "Сотрудники не найдены.",
+    "loadError": "Не удалось загрузить сотрудников."
+  },
+  "employeeDetail": {
+    "back": "Назад",
+    "overallScore": "Общий балл",
+    "attendanceRate": "Посещаемость",
+    "punctualityRate": "Пунктуальность",
+    "dayByDay": "По дням",
+    "colDate": "Дата",
+    "colCheckIn": "Приход",
+    "colCheckOut": "Уход",
+    "colStatus": "Статус",
+    "statusPresent": "Присутствовал",
+    "statusLate": "Опоздал",
+    "statusAbsent": "Отсутствовал",
+    "statusDayOff": "Выходной",
+    "noData": "Нет данных за этот период.",
+    "loadError": "Не удалось загрузить данные сотрудника."
+  },
+  "departments": {
+    "countSubtitle": "{{count}} отделов",
+    "employeeCount": "{{count}} сотрудников",
+    "best": "Лучший",
+    "needsAttention": "Требует внимания",
+    "attendance": "Посещаемость",
+    "punctuality": "Пунктуальность",
+    "lateIncidents": "Опоздания",
+    "noData": "Нет данных за этот период.",
+    "loadError": "Не удалось загрузить данные отделов."
+  }
+}

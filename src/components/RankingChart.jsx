@@ -1,4 +1,5 @@
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { useTranslation } from 'react-i18next'
 
 function colorForScore(score) {
   if (score >= 85) return '#2dd4bf' // teal-400
@@ -7,6 +8,7 @@ function colorForScore(score) {
 }
 
 export default function RankingChart({ data }) {
+  const { t } = useTranslation()
   const chartData = data.map((row) => ({
     name: row.full_name,
     score: row.overall_score !== null && row.overall_score !== undefined ? Math.round(row.overall_score * 100) : 0,
@@ -30,7 +32,7 @@ export default function RankingChart({ data }) {
           tick={{ fill: 'rgba(255,255,255,0.75)', fontSize: 12 }}
         />
         <Tooltip
-          formatter={(value) => [`${value}%`, 'Score']}
+          formatter={(value) => [`${value}%`, t('ranking.colScore')]}
           contentStyle={{
             background: '#211d33',
             border: '1px solid rgba(255,255,255,0.1)',

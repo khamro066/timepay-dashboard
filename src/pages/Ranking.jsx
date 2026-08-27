@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { ArrowUpDown, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import PeriodTabs from '../components/PeriodTabs'
@@ -17,14 +18,14 @@ function getDateRange(period) {
   return { date_from: startStr, date_to: endStr }
 }
 
-const COLUMNS = [
-  { key: 'full_name', label: 'Name' },
-  { key: 'department', label: 'Department' },
-  { key: 'attendance_rate', label: 'Attendance' },
-  { key: 'punctuality_rate', label: 'Punctuality' },
-  { key: 'overall_score', label: 'Score' },
-  { key: 'late_days', label: 'Late' },
-  { key: 'absent_days', label: 'Absent' },
+const COLUMN_KEYS = [
+  { key: 'full_name', labelKey: 'ranking.colName' },
+  { key: 'department', labelKey: 'ranking.colDepartment' },
+  { key: 'attendance_rate', labelKey: 'ranking.colAttendance' },
+  { key: 'punctuality_rate', labelKey: 'ranking.colPunctuality' },
+  { key: 'overall_score', labelKey: 'ranking.colScore' },
+  { key: 'late_days', labelKey: 'ranking.colLate' },
+  { key: 'absent_days', labelKey: 'ranking.colAbsent' },
 ]
 
 function fmtPct(value) {
@@ -32,6 +33,7 @@ function fmtPct(value) {
 }
 
 export default function Ranking() {
+  const { t } = useTranslation()
   const api = useApi()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -55,7 +57,7 @@ export default function Ranking() {
         const res = await api.get('/api/ranking', { params })
         if (!cancelled) setData(res.data)
       } catch {
-        if (!cancelled) setError('Could not load ranking data.')
+        if (!cancelled) setError('ranking.loadError')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -105,9 +107,9 @@ export default function Ranking() {
         animate={{ opacity: 1, y: 0 }}
         className="text-2xl font-bold text-white mb-1"
       >
-        Ranking
+        {t('nav.ranking')}
       </motion.h1>
-      <p className="text-white/40 text-sm mb-4">{data.length} employees</p>
+      <p className="text-white/40 text-sm mb-4">{t('ranking.employeeCount', { count: data.length })}</p>
 
       <div className="flex items-center gap-3 flex-wrap">
         <PeriodTabs period={period} onChange={setPeriod} />
@@ -127,7 +129,7 @@ export default function Ranking() {
         )}
       </div>
 
-      {error && <p className="text-red-400 mb-4 text-sm">{error}</p>}
+      {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
       <div className={`transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}>
         <motion.div
@@ -136,10 +138,10 @@ export default function Ranking() {
           transition={{ duration: 0.25 }}
           className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-5 shadow-lg shadow-black/20 mb-6"
         >
-          <h2 className="text-white font-semibold mb-4">Top 15 by score</h2>
+          <h2 className="text-white font-semibold mb-4">{t('ranking.top15')}</h2>
           {topByScore.length > 0 && <RankingChart data={topByScore} />}
           {topByScore.length === 0 && (
-            <p className="text-white/40 text-sm py-4">No data for this period.</p>
+            <p className="text-white/40 text-sm py-4">{t('ranking.noData')}</p>
           )}
         </motion.div>
 
@@ -154,14 +156,14 @@ export default function Ranking() {
               <thead>
                 <tr className="border-b border-white/5">
                   <th className="text-left px-4 py-3 text-white/40 font-medium">#</th>
-                  {COLUMNS.map((col) => (
+                  {COLUMN_KEYS.map((col) => (
                     <th
                       key={col.key}
                       onClick={() => toggleSort(col.key)}
                       className="text-left px-4 py-3 text-white/40 font-medium cursor-pointer select-none hover:text-white/70 transition-colors whitespace-nowrap"
                     >
                       <span className="inline-flex items-center gap-1">
-                        {col.label}
+                        {t(col.labelKey)}
                         {sort.key === col.key && <ArrowUpDown className="w-3 h-3" />}
                       </span>
                     </th>
@@ -194,8 +196,8 @@ export default function Ranking() {
                 ))}
                 {sorted.length === 0 && (
                   <tr>
-                    <td colSpan={COLUMNS.length + 1} className="px-4 py-8 text-center text-white/40">
-                      No data for this period.
+                    <td colSpan={COLUMN_KEYS.length + 1} className="px-4 py-8 text-center text-white/40">
+                      {t('ranking.noData')}
                     </td>
                   </tr>
                 )}

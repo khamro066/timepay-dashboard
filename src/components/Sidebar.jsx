@@ -1,19 +1,22 @@
 import { motion } from 'framer-motion'
 import { Building2, LayoutDashboard, LogOut, Menu, Trophy, Users, X } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import LanguageSwitcher from './LanguageSwitcher'
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/ranking', label: 'Ranking', icon: Trophy, end: false },
-  { to: '/employees', label: 'Employees', icon: Users, end: false },
-  { to: '/departments', label: "Bo'limlar", icon: Building2, end: false },
+  { to: '/', key: 'nav.dashboard', icon: LayoutDashboard, end: true },
+  { to: '/ranking', key: 'nav.ranking', icon: Trophy, end: false },
+  { to: '/employees', key: 'nav.employees', icon: Users, end: false },
+  { to: '/departments', key: 'nav.departments', icon: Building2, end: false },
 ]
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false)
   const { logout } = useAuth()
+  const { t } = useTranslation()
 
   return (
     <>
@@ -39,9 +42,15 @@ export default function Sidebar() {
           open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
-        <div className="mb-8 px-2 pt-2">
-          <h1 className="text-white font-bold text-lg tracking-tight">Timepay</h1>
-          <p className="text-white/40 text-xs">Analytics</p>
+        <div className="mb-6 px-2 pt-2 flex items-center justify-between">
+          <div>
+            <h1 className="text-white font-bold text-lg tracking-tight">{t('nav.brand')}</h1>
+            <p className="text-white/40 text-xs">{t('nav.brandSubtitle')}</p>
+          </div>
+        </div>
+
+        <div className="mb-6 px-2">
+          <LanguageSwitcher />
         </div>
 
         <nav className="flex-1 flex flex-col gap-1">
@@ -64,7 +73,7 @@ export default function Sidebar() {
                     />
                   )}
                   <item.icon className="w-4 h-4 relative z-10 shrink-0" />
-                  <span className="relative z-10 text-sm font-medium">{item.label}</span>
+                  <span className="relative z-10 text-sm font-medium">{t(item.key)}</span>
                 </motion.div>
               )}
             </NavLink>
@@ -80,7 +89,7 @@ export default function Sidebar() {
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:text-red-400 transition-colors"
         >
           <LogOut className="w-4 h-4" />
-          <span className="text-sm font-medium">Logout</span>
+          <span className="text-sm font-medium">{t('nav.logout')}</span>
         </motion.button>
       </aside>
     </>

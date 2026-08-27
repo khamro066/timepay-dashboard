@@ -1,0 +1,86 @@
+{
+  "nav": {
+    "brand": "Timepay",
+    "brandSubtitle": "Analitika",
+    "dashboard": "Boshqaruv paneli",
+    "ranking": "Reyting",
+    "employees": "Xodimlar",
+    "departments": "Bo'limlar",
+    "logout": "Chiqish"
+  },
+  "period": {
+    "today": "Bugun",
+    "week": "Hafta",
+    "month": "Oy"
+  },
+  "login": {
+    "title": "Xush kelibsiz",
+    "subtitle": "Timepay Analytics tizimiga kiring",
+    "username": "Foydalanuvchi nomi",
+    "password": "Parol",
+    "signIn": "Kirish",
+    "errorInvalid": "Foydalanuvchi nomi yoki parol noto'g'ri",
+    "errorNetwork": "Serverga ulanib bo'lmadi",
+    "errorGeneric": "Nimadir xato ketdi"
+  },
+  "dashboard": {
+    "barchasi": "Barchasi",
+    "ishda": "Ishda",
+    "kech": "Kech",
+    "ishdaEmas": "Ishda emas",
+    "topToday": "Bugungi TOP 5",
+    "topWeek": "Shu haftadagi TOP 5",
+    "topMonth": "Shu oydagi TOP 5",
+    "noData": "Bu davr uchun ma'lumot yo'q.",
+    "loadError": "Boshqaruv paneli ma'lumotlarini yuklab bo'lmadi."
+  },
+  "ranking": {
+    "employeeCount": "{{count}} xodim",
+    "colName": "Ism",
+    "colDepartment": "Bo'lim",
+    "colAttendance": "Davomat",
+    "colPunctuality": "Punktuallik",
+    "colScore": "Ball",
+    "colLate": "Kech qolish",
+    "colAbsent": "Yo'qlik",
+    "top15": "Eng yaxshi 15 ta (ball bo'yicha)",
+    "noData": "Bu davr uchun ma'lumot yo'q.",
+    "loadError": "Reyting ma'lumotlarini yuklab bo'lmadi."
+  },
+  "employees": {
+    "countSubtitle": "{{filtered}} / {{total}} · so'nggi 30 kun",
+    "searchPlaceholder": "Ism yoki bo'lim bo'yicha qidirish...",
+    "late": "Kech qolgan",
+    "absent": "Yo'q bo'lgan",
+    "notFound": "Xodim topilmadi.",
+    "loadError": "Xodimlarni yuklab bo'lmadi."
+  },
+  "employeeDetail": {
+    "back": "Orqaga",
+    "overallScore": "Umumiy ball",
+    "attendanceRate": "Davomat darajasi",
+    "punctualityRate": "Punktuallik darajasi",
+    "dayByDay": "Kunlik ma'lumot",
+    "colDate": "Sana",
+    "colCheckIn": "Kelgan vaqti",
+    "colCheckOut": "Ketgan vaqti",
+    "colStatus": "Holati",
+    "statusPresent": "Ishda",
+    "statusLate": "Kech qoldi",
+    "statusAbsent": "Yo'q",
+    "statusDayOff": "Dam olish kuni",
+    "noData": "Bu davr uchun ma'lumot yo'q.",
+    "loadError": "Xodim ma'lumotlarini yuklab bo'lmadi."
+  },
+  "departments": {
+    "countSubtitle": "{{count}} ta bo'lim",
+    "employeeCount": "{{count}} xodim",
+    "best": "Eng yaxshi",
+    "needsAttention": "E'tibor talab qiladi",
+    "attendance": "Davomat",
+    "punctuality": "Punktuallik",
+    "lateIncidents": "Kech qolishlar",
+    "noData": "Bu davr uchun ma'lumot yo'q.",
+    "loadError": "Bo'lim ma'lumotlarini yuklab bo'lmadi."
+  }
+}

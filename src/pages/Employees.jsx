@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import ScoreBadge from '../components/ScoreBadge'
@@ -13,6 +14,7 @@ function last30Days() {
 }
 
 export default function Employees() {
+  const { t } = useTranslation()
   const api = useApi()
   const navigate = useNavigate()
   const [data, setData] = useState([])
@@ -31,7 +33,7 @@ export default function Employees() {
         const res = await api.get('/api/ranking', { params: { date_from, date_to } })
         if (!cancelled) setData(res.data)
       } catch {
-        if (!cancelled) setError('Could not load employees.')
+        if (!cancelled) setError('employees.loadError')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -58,20 +60,20 @@ export default function Employees() {
         animate={{ opacity: 1, y: 0 }}
         className="text-2xl font-bold text-white mb-1"
       >
-        Employees
+        {t('nav.employees')}
       </motion.h1>
       <p className="text-white/40 text-sm mb-4">
-        {filtered.length} of {data.length} · last 30 days
+        {t('employees.countSubtitle', { filtered: filtered.length, total: data.length })}
       </p>
 
-      {error && <p className="text-red-400 mb-4 text-sm">{error}</p>}
+      {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
       <div className="relative mb-6 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search name or department..."
+          placeholder={t('employees.searchPlaceholder')}
           className="w-full rounded-xl bg-white/5 border border-white/10 pl-10 pr-3 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500 transition"
         />
       </div>
@@ -98,13 +100,17 @@ export default function Employees() {
               <ScoreBadge score={emp.overall_score} />
             </div>
             <div className="flex gap-4 mt-3 text-xs text-white/50">
-              <span>Late: {emp.late_days}</span>
-              <span>Absent: {emp.absent_days}</span>
+              <span>
+                {t('employees.late')}: {emp.late_days}
+              </span>
+              <span>
+                {t('employees.absent')}: {emp.absent_days}
+              </span>
             </div>
           </motion.div>
         ))}
         {!loading && filtered.length === 0 && (
-          <p className="text-white/40 text-sm col-span-full text-center py-8">No employees found.</p>
+          <p className="text-white/40 text-sm col-span-full text-center py-8">{t('employees.notFound')}</p>
         )}
       </div>
     </div>

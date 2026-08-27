@@ -8,7 +8,7 @@ function toneClasses(score) {
 }
 
 export default function ScoreBadge({ score }) {
-  const label = score === null || score === undefined ? 'N/A' : `${Math.round(score * 100)}%`
+  const label = score === null || score === undefined ? '—' : `${Math.round(score * 100)}%`
 
   return (
     <span

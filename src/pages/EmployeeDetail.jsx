@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { ArrowLeft, Award, CheckCircle2, Clock, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import PeriodTabs from '../components/PeriodTabs'
@@ -20,13 +21,14 @@ function fmtPct(value) {
 }
 
 function dayStatus(day) {
-  if (!day.is_working_day) return { label: 'Day off', className: 'text-white/30 bg-white/5' }
-  if (day.absent) return { label: 'Absent', className: 'text-red-300 bg-red-500/15' }
-  if (day.late) return { label: 'Late', className: 'text-amber-300 bg-amber-500/15' }
-  return { label: 'Present', className: 'text-teal-300 bg-teal-500/15' }
+  if (!day.is_working_day) return { labelKey: 'employeeDetail.statusDayOff', className: 'text-white/30 bg-white/5' }
+  if (day.absent) return { labelKey: 'employeeDetail.statusAbsent', className: 'text-red-300 bg-red-500/15' }
+  if (day.late) return { labelKey: 'employeeDetail.statusLate', className: 'text-amber-300 bg-amber-500/15' }
+  return { labelKey: 'employeeDetail.statusPresent', className: 'text-teal-300 bg-teal-500/15' }
 }
 
 export default function EmployeeDetail() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const api = useApi()
@@ -50,7 +52,7 @@ export default function EmployeeDetail() {
           setImageFailed(false)
         }
       } catch {
-        if (!cancelled) setError('Could not load employee data.')
+        if (!cancelled) setError('employeeDetail.loadError')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -75,7 +77,7 @@ export default function EmployeeDetail() {
         className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm mb-4 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back
+        {t('employeeDetail.back')}
       </motion.button>
 
       <motion.div
@@ -107,13 +109,13 @@ export default function EmployeeDetail() {
 
       <PeriodTabs period={period} onChange={setPeriod} />
 
-      {error && <p className="text-red-400 mb-4 text-sm">{error}</p>}
+      {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
       <div className={`transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <StatCard label="Overall score" value={fmtPct(data?.overall_score)} icon={Award} tone="purple" />
-          <StatCard label="Attendance rate" value={fmtPct(data?.attendance_rate)} icon={CheckCircle2} tone="teal" />
-          <StatCard label="Punctuality rate" value={fmtPct(data?.punctuality_rate)} icon={Clock} tone="amber" />
+          <StatCard label={t('employeeDetail.overallScore')} value={fmtPct(data?.overall_score)} icon={Award} tone="purple" />
+          <StatCard label={t('employeeDetail.attendanceRate')} value={fmtPct(data?.attendance_rate)} icon={CheckCircle2} tone="teal" />
+          <StatCard label={t('employeeDetail.punctualityRate')} value={fmtPct(data?.punctuality_rate)} icon={Clock} tone="amber" />
         </div>
 
         <motion.div
@@ -123,16 +125,16 @@ export default function EmployeeDetail() {
           className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface shadow-lg shadow-black/20 overflow-hidden"
         >
           <div className="p-5 pb-0">
-            <h2 className="text-white font-semibold">Day by day</h2>
+            <h2 className="text-white font-semibold">{t('employeeDetail.dayByDay')}</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5">
-                  <th className="text-left px-4 py-3 text-white/40 font-medium">Date</th>
-                  <th className="text-left px-4 py-3 text-white/40 font-medium">Check-in</th>
-                  <th className="text-left px-4 py-3 text-white/40 font-medium">Check-out</th>
-                  <th className="text-left px-4 py-3 text-white/40 font-medium">Status</th>
+                  <th className="text-left px-4 py-3 text-white/40 font-medium">{t('employeeDetail.colDate')}</th>
+                  <th className="text-left px-4 py-3 text-white/40 font-medium">{t('employeeDetail.colCheckIn')}</th>
+                  <th className="text-left px-4 py-3 text-white/40 font-medium">{t('employeeDetail.colCheckOut')}</th>
+                  <th className="text-left px-4 py-3 text-white/40 font-medium">{t('employeeDetail.colStatus')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -153,7 +155,7 @@ export default function EmployeeDetail() {
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${status.className}`}
                         >
-                          {status.label}
+                          {t(status.labelKey)}
                         </span>
                       </td>
                     </motion.tr>
@@ -162,7 +164,7 @@ export default function EmployeeDetail() {
                 {days.length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-white/40">
-                      No data for this period.
+                      {t('employeeDetail.noData')}
                     </td>
                   </tr>
                 )}

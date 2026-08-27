@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Clock, UserCheck, Users, UserX } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import PeriodTabs from '../components/PeriodTabs'
@@ -20,13 +21,14 @@ function getDateRange(period) {
   return { date_from: start.toISOString().slice(0, 10), date_to: endStr }
 }
 
-const TOP_LABEL = {
-  Today: 'Top 5 today',
-  Week: 'Top 5 this week',
-  Month: 'Top 5 this month',
+const TOP_LABEL_KEY = {
+  Today: 'dashboard.topToday',
+  Week: 'dashboard.topWeek',
+  Month: 'dashboard.topMonth',
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation()
   const api = useApi()
   const navigate = useNavigate()
   const [period, setPeriod] = useState('Today')
@@ -67,7 +69,7 @@ export default function Dashboard() {
           }
         }
       } catch {
-        if (!cancelled) setError('Could not load dashboard data.')
+        if (!cancelled) setError('dashboard.loadError')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -86,22 +88,22 @@ export default function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="text-2xl font-bold text-white mb-1"
       >
-        Dashboard
+        {t('nav.dashboard')}
       </motion.h1>
       <p className="text-white/40 text-sm mb-4">{todayStr()}</p>
 
       <PeriodTabs period={period} onChange={setPeriod} />
 
-      {error && <p className="text-red-400 mb-4 text-sm">{error}</p>}
+      {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
       <div
         className={`transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Barchasi" value={stats?.total_employees ?? 0} icon={Users} tone="purple" />
-          <StatCard label="Ishda" value={stats?.present ?? 0} icon={UserCheck} tone="teal" />
-          <StatCard label="Kech" value={stats?.late ?? 0} icon={Clock} tone="amber" />
-          <StatCard label="Ishda emas" value={stats?.absent ?? 0} icon={UserX} tone="red" />
+          <StatCard label={t('dashboard.barchasi')} value={stats?.total_employees ?? 0} icon={Users} tone="purple" />
+          <StatCard label={t('dashboard.ishda')} value={stats?.present ?? 0} icon={UserCheck} tone="teal" />
+          <StatCard label={t('dashboard.kech')} value={stats?.late ?? 0} icon={Clock} tone="amber" />
+          <StatCard label={t('dashboard.ishdaEmas')} value={stats?.absent ?? 0} icon={UserX} tone="red" />
         </div>
 
         <motion.div
@@ -110,7 +112,7 @@ export default function Dashboard() {
           transition={{ delay: 0.15, duration: 0.25 }}
           className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-5 shadow-lg shadow-black/20"
         >
-          <h2 className="text-white font-semibold mb-4">{TOP_LABEL[period]}</h2>
+          <h2 className="text-white font-semibold mb-4">{t(TOP_LABEL_KEY[period])}</h2>
           <div className="flex flex-col gap-1">
             {topFive.map((emp, i) => (
               <motion.div
@@ -136,7 +138,7 @@ export default function Dashboard() {
               </motion.div>
             ))}
             {!loading && topFive.length === 0 && (
-              <p className="text-white/40 text-sm py-4">No data for this period.</p>
+              <p className="text-white/40 text-sm py-4">{t('dashboard.noData')}</p>
             )}
           </div>
         </motion.div>
