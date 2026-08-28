@@ -127,7 +127,9 @@ export default function EmployeeDetail() {
           <div className="p-5 pb-0">
             <h2 className="text-white font-semibold">{t('employeeDetail.dayByDay')}</h2>
           </div>
-          <div className="overflow-x-auto">
+
+          {/* Table: md and up */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5">
@@ -170,6 +172,44 @@ export default function EmployeeDetail() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Stacked cards: below md */}
+          <div className="md:hidden flex flex-col gap-2 p-4 pt-3">
+            {days.map((day, i) => {
+              const status = dayStatus(day)
+              return (
+                <motion.div
+                  key={day.date}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(i * 0.015, 0.3), duration: 0.15 }}
+                  className="rounded-xl bg-white/5 border border-white/5 p-3.5"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-white/70 text-sm font-medium">{day.date}</span>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${status.className}`}
+                    >
+                      {t(status.labelKey)}
+                    </span>
+                  </div>
+                  <div className="flex gap-6 text-sm">
+                    <div>
+                      <p className="text-white/40 text-[11px]">{t('employeeDetail.colCheckIn')}</p>
+                      <p className="text-white/80">{day.first_check_in ?? '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/40 text-[11px]">{t('employeeDetail.colCheckOut')}</p>
+                      <p className="text-white/80">{day.last_check_out ?? '—'}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
+            {days.length === 0 && (
+              <p className="text-white/40 text-sm text-center py-8">{t('employeeDetail.noData')}</p>
+            )}
           </div>
         </motion.div>
       </div>

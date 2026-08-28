@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { LanguageProvider } from './context/LanguageContext'
 import Dashboard from './pages/Dashboard'
+import DepartmentDetail from './pages/DepartmentDetail'
 import Departments from './pages/Departments'
 import EmployeeDetail from './pages/EmployeeDetail'
 import Employees from './pages/Employees'
@@ -32,6 +33,7 @@ function AppRoutes() {
         <Route path="/employees" element={<Employees />} />
         <Route path="/employees/:id" element={<EmployeeDetail />} />
         <Route path="/departments" element={<Departments />} />
+        <Route path="/departments/:name" element={<DepartmentDetail />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

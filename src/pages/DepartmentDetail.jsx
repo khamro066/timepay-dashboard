@@ -1,25 +1,30 @@
 import { motion } from 'framer-motion'
-import { Search } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import Avatar from '../components/Avatar'
+import PeriodTabs from '../components/PeriodTabs'
 import ScoreBadge from '../components/ScoreBadge'
 
-function last30Days() {
+function getDateRange(period) {
   const end = new Date()
+  const endStr = end.toISOString().slice(0, 10)
   const start = new Date(end)
-  start.setDate(start.getDate() - 29)
-  return { date_from: start.toISOString().slice(0, 10), date_to: end.toISOString().slice(0, 10) }
+  if (period === 'Week') start.setDate(start.getDate() - 6)
+  if (period === 'Month') start.setDate(start.getDate() - 29)
+  return { date_from: start.toISOString().slice(0, 10), date_to: endStr }
 }
 
-export default function Employees() {
+export default function DepartmentDetail() {
   const { t } = useTranslation()
-  const api = useApi()
+  const { name } = useParams()
+  const department = decodeURIComponent(name)
   const navigate = useNavigate()
+  const api = useApi()
+  const [period, setPeriod] = useState('Month')
   const [data, setData] = useState([])
-  const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -30,11 +35,11 @@ export default function Employees() {
       setLoading(true)
       setError('')
       try {
-        const { date_from, date_to } = last30Days()
-        const res = await api.get('/api/ranking', { params: { date_from, date_to } })
+        const { date_from, date_to } = getDateRange(period)
+        const res = await api.get('/api/ranking', { params: { date_from, date_to, department } })
         if (!cancelled) setData(res.data)
       } catch {
-        if (!cancelled) setError('employees.loadError')
+        if (!cancelled) setError('departments.loadError')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -44,43 +49,39 @@ export default function Employees() {
     return () => {
       cancelled = true
     }
-  }, [api])
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return data
-    return data.filter(
-      (e) => e.full_name?.toLowerCase().includes(q) || e.department?.toLowerCase().includes(q),
-    )
-  }, [data, query])
+  }, [api, period, department])
 
   return (
     <div>
+      <motion.button
+        type="button"
+        onClick={() => navigate('/departments')}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.96 }}
+        transition={{ duration: 0.15 }}
+        className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm mb-4 transition-colors min-h-[44px] -ml-1 pl-1"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {t('employeeDetail.back')}
+      </motion.button>
+
       <motion.h1
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-2xl font-bold text-white mb-1"
       >
-        {t('nav.employees')}
+        {department}
       </motion.h1>
-      <p className="text-white/40 text-sm mb-4">
-        {t('employees.countSubtitle', { filtered: filtered.length, total: data.length })}
-      </p>
+      <p className="text-white/40 text-sm mb-4">{t('departments.employeeCount', { count: data.length })}</p>
+
+      <PeriodTabs period={period} onChange={setPeriod} />
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
-      <div className="relative mb-6 max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('employees.searchPlaceholder')}
-          className="w-full rounded-xl bg-white/5 border border-white/10 pl-10 pr-3 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500 transition"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((emp, i) => (
+      <div
+        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}
+      >
+        {data.map((emp, i) => (
           <motion.div
             key={emp.employee_id}
             initial={{ opacity: 0, y: 10 }}
@@ -96,9 +97,7 @@ export default function Employees() {
                 <Avatar src={emp.profile_image} name={emp.full_name} size="sm" />
                 <div className="min-w-0">
                   <p className="text-white font-medium truncate">{emp.full_name}</p>
-                  <p className="text-white/40 text-xs truncate">
-                    {emp.department} · {emp.position}
-                  </p>
+                  <p className="text-white/40 text-xs truncate">{emp.position}</p>
                 </div>
               </div>
               <ScoreBadge score={emp.overall_score} />
@@ -113,7 +112,7 @@ export default function Employees() {
             </div>
           </motion.div>
         ))}
-        {!loading && filtered.length === 0 && (
+        {!loading && data.length === 0 && (
           <p className="text-white/40 text-sm col-span-full text-center py-8">{t('employees.notFound')}</p>
         )}
       </div>

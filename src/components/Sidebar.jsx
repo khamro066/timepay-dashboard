@@ -23,7 +23,7 @@ export default function Sidebar() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-surface-light text-white shadow-lg"
+        className="md:hidden fixed top-4 left-4 z-50 p-3 rounded-lg bg-surface-light text-white shadow-lg"
       >
         {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
@@ -61,7 +61,7 @@ export default function Sidebar() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors ${
+                  className={`relative flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-xl cursor-pointer transition-colors ${
                     isActive ? 'text-white' : 'text-white/50 hover:text-white/80'
                   }`}
                 >
@@ -86,7 +86,7 @@ export default function Sidebar() {
           whileTap={{ scale: 0.96 }}
           transition={{ duration: 0.15 }}
           onClick={logout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:text-red-400 transition-colors"
+          className="flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-xl text-white/50 hover:text-red-400 transition-colors"
         >
           <LogOut className="w-4 h-4" />
           <span className="text-sm font-medium">{t('nav.logout')}</span>

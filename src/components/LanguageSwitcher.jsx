@@ -16,7 +16,7 @@ export default function LanguageSwitcher() {
           key={lang.code}
           type="button"
           onClick={() => setLanguage(lang.code)}
-          className="relative px-3 py-1.5 text-xs font-semibold"
+          className="relative px-3 py-3 md:py-1.5 text-xs font-semibold"
         >
           {language === lang.code && (
             <motion.div

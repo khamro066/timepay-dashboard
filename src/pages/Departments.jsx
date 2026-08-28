@@ -87,7 +87,7 @@ export default function Departments() {
               transition={{ delay: Math.min(i * 0.04, 0.3), duration: 0.2 }}
               whileHover={{ scale: 1.03, filter: 'brightness(1.1)' }}
               whileTap={{ scale: 0.96 }}
-              onClick={() => navigate(`/ranking?department=${encodeURIComponent(dept.department)}`)}
+              onClick={() => navigate(`/departments/${encodeURIComponent(dept.department)}`)}
               className={`rounded-2xl border bg-gradient-to-br from-surface-light to-surface p-5 shadow-lg cursor-pointer ${highlight}`}
             >
               <div className="flex items-start justify-between mb-4">

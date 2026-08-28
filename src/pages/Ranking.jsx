@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
+import Avatar from '../components/Avatar'
 import PeriodTabs from '../components/PeriodTabs'
 import RankingChart from '../components/RankingChart'
 import ScoreBadge from '../components/ScoreBadge'
@@ -145,11 +146,12 @@ export default function Ranking() {
           )}
         </motion.div>
 
+        {/* Table: md and up */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.25 }}
-          className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface shadow-lg shadow-black/20 overflow-hidden"
+          className="hidden md:block rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface shadow-lg shadow-black/20 overflow-hidden"
         >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -183,7 +185,12 @@ export default function Ranking() {
                     className={`border-b border-white/5 last:border-0 cursor-pointer ${i < 10 ? 'bg-violet-500/[0.04]' : ''}`}
                   >
                     <td className="px-4 py-3 text-white/40">{i + 1}</td>
-                    <td className="px-4 py-3 text-white font-medium whitespace-nowrap">{row.full_name}</td>
+                    <td className="px-4 py-3 text-white font-medium whitespace-nowrap">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar src={row.profile_image} name={row.full_name} size="sm" />
+                        {row.full_name}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-white/60 whitespace-nowrap">{row.department}</td>
                     <td className="px-4 py-3 text-white/60">{fmtPct(row.attendance_rate)}</td>
                     <td className="px-4 py-3 text-white/60">{fmtPct(row.punctuality_rate)}</td>
@@ -205,6 +212,55 @@ export default function Ranking() {
             </table>
           </div>
         </motion.div>
+
+        {/* Card list: below md */}
+        <div className="md:hidden flex flex-col gap-2">
+          {sorted.map((row, i) => (
+            <motion.div
+              key={row.employee_id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(i * 0.02, 0.4), duration: 0.2 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate(`/employees/${row.employee_id}`)}
+              className={`rounded-2xl border p-3.5 shadow-lg shadow-black/20 cursor-pointer bg-gradient-to-br from-surface-light to-surface ${i < 10 ? 'border-violet-500/20' : 'border-white/5'}`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="w-6 h-6 shrink-0 flex items-center justify-center rounded-full bg-violet-500/20 text-violet-300 text-xs font-semibold">
+                  {i + 1}
+                </span>
+                <Avatar src={row.profile_image} name={row.full_name} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-white font-medium truncate">{row.full_name}</p>
+                  <p className="text-white/40 text-xs truncate">{row.department}</p>
+                </div>
+                <ScoreBadge score={row.overall_score} />
+              </div>
+              <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-white/5 text-center">
+                <div>
+                  <p className="text-white text-sm font-semibold">{fmtPct(row.attendance_rate)}</p>
+                  <p className="text-white/40 text-[10px]">{t('ranking.colAttendance')}</p>
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">{fmtPct(row.punctuality_rate)}</p>
+                  <p className="text-white/40 text-[10px]">{t('ranking.colPunctuality')}</p>
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">{row.late_days}</p>
+                  <p className="text-white/40 text-[10px]">{t('ranking.colLate')}</p>
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">{row.absent_days}</p>
+                  <p className="text-white/40 text-[10px]">{t('ranking.colAbsent')}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+          {sorted.length === 0 && (
+            <p className="text-white/40 text-sm text-center py-8">{t('ranking.noData')}</p>
+          )}
+        </div>
       </div>
     </div>
   )

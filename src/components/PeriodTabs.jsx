@@ -17,7 +17,7 @@ export default function PeriodTabs({ period, onChange }) {
           key={tab.value}
           type="button"
           onClick={() => onChange(tab.value)}
-          className="relative px-4 py-1.5 text-sm font-medium"
+          className="relative px-4 py-3 md:py-1.5 text-sm font-medium"
         >
           {period === tab.value && (
             <motion.div
