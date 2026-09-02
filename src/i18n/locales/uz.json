@@ -6,6 +6,7 @@
     "ranking": "Reyting",
     "employees": "Xodimlar",
     "departments": "Bo'limlar",
+    "reports": "Hisobotlar",
     "logout": "Chiqish"
   },
   "period": {
@@ -82,5 +83,27 @@
     "lateIncidents": "Kech qolishlar",
     "noData": "Bu davr uchun ma'lumot yo'q.",
     "loadError": "Bo'lim ma'lumotlarini yuklab bo'lmadi."
+  },
+  "reports": {
+    "employeeCount": "{{count}} xodim",
+    "exportButton": "Excelga eksport",
+    "exporting": "Yuklanmoqda...",
+    "colName": "Ism",
+    "colWorkedDays": "Ishlagan kunlar soni",
+    "colNotWorkedDays": "Ishlamagan kunlar soni",
+    "colUnexcused": "Sababsiz ishga kelmagan kunlar soni",
+    "colExcused": "Sababli ishga kelmagan kunlar soni",
+    "colLateDays": "Kech qolgan kunlar soni",
+    "colLateMinutes": "Jami kechikkan daqiqa",
+    "colAvgCheckIn": "O'rtacha ishga kelish vaqti",
+    "colEarlyLeaving": "Erta ketgan kunlar soni",
+    "colAvgCheckOut": "O'rtacha ishdan ketish vaqti",
+    "colTotalWorked": "Umumiy ish soati",
+    "colNote": "Izoh",
+    "notePlaceholder": "Izoh qo'shish...",
+    "noteSaved": "Saqlandi",
+    "noteSaveError": "Saqlanmadi",
+    "noData": "Bu davr uchun ma'lumot yo'q.",
+    "loadError": "Hisobot ma'lumotlarini yuklab bo'lmadi."
   }
 }

@@ -6,6 +6,7 @@
     "ranking": "Рейтинг",
     "employees": "Сотрудники",
     "departments": "Отделы",
+    "reports": "Отчёты",
     "logout": "Выйти"
   },
   "period": {
@@ -82,5 +83,27 @@
     "lateIncidents": "Опоздания",
     "noData": "Нет данных за этот период.",
     "loadError": "Не удалось загрузить данные отделов."
+  },
+  "reports": {
+    "employeeCount": "{{count}} сотрудников",
+    "exportButton": "Экспорт в Excel",
+    "exporting": "Загрузка...",
+    "colName": "Имя",
+    "colWorkedDays": "Отработано дней",
+    "colNotWorkedDays": "Не отработано дней",
+    "colUnexcused": "Дней прогула без причины",
+    "colExcused": "Дней отсутствия по причине",
+    "colLateDays": "Дней с опозданием",
+    "colLateMinutes": "Всего минут опоздания",
+    "colAvgCheckIn": "Среднее время прихода",
+    "colEarlyLeaving": "Дней раннего ухода",
+    "colAvgCheckOut": "Среднее время ухода",
+    "colTotalWorked": "Всего отработано часов",
+    "colNote": "Примечание",
+    "notePlaceholder": "Добавить примечание...",
+    "noteSaved": "Сохранено",
+    "noteSaveError": "Не сохранено",
+    "noData": "Нет данных за этот период.",
+    "loadError": "Не удалось загрузить данные отчёта."
   }
 }

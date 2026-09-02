@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Building2, LayoutDashboard, LogOut, Menu, Trophy, Users, X } from 'lucide-react'
+import { Building2, FileSpreadsheet, LayoutDashboard, LogOut, Menu, Trophy, Users, X } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
@@ -11,6 +11,7 @@ const navItems = [
   { to: '/ranking', key: 'nav.ranking', icon: Trophy, end: false },
   { to: '/employees', key: 'nav.employees', icon: Users, end: false },
   { to: '/departments', key: 'nav.departments', icon: Building2, end: false },
+  { to: '/reports', key: 'nav.reports', icon: FileSpreadsheet, end: false },
 ]
 
 export default function Sidebar() {
