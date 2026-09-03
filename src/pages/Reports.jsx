@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useApi } from '../api/useApi'
 import Avatar from '../components/Avatar'
 import FilterBar from '../components/FilterBar'
+import LatenessBars from '../components/LatenessBars'
 import NoteCell from '../components/NoteCell'
 import ScoreBadge from '../components/ScoreBadge'
 
@@ -82,6 +83,7 @@ export default function Reports() {
   const [search, setSearch] = useState('')
   const [department, setDepartment] = useState(null)
   const [sortDir, setSortDir] = useState('worst')
+  const [lateness, setLateness] = useState(null)
 
   const { date_from, date_to } = getDateRange(period, customRange)
   const rangeReady = Boolean(date_from && date_to)
@@ -110,6 +112,27 @@ export default function Reports() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [api, date_from, date_to, periodKey, rangeReady])
+
+  useEffect(() => {
+    if (!rangeReady) return
+    let cancelled = false
+
+    async function loadLateness() {
+      try {
+        const params = { date_from, date_to }
+        if (department) params.department = department
+        const res = await api.get('/api/lateness-distribution', { params })
+        if (!cancelled) setLateness(res.data)
+      } catch {
+        if (!cancelled) setLateness(null)
+      }
+    }
+
+    loadLateness()
+    return () => {
+      cancelled = true
+    }
+  }, [api, date_from, date_to, department, rangeReady])
 
   const departmentOptions = useMemo(() => {
     const set = new Set(data.map((r) => r.department).filter(Boolean))
@@ -203,6 +226,14 @@ export default function Reports() {
         resultShown={filtered.length}
         resultTotal={data.length}
       />
+
+      {lateness && lateness.total > 0 && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-5 mb-6">
+          <h2 className="text-white font-semibold">{t('reports.latenessTitle')}</h2>
+          <p className="text-white/40 text-xs mb-4">{t('reports.latenessSubtitle')}</p>
+          <LatenessBars buckets={lateness.buckets} />
+        </motion.div>
+      )}
 
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <motion.button
