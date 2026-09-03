@@ -73,6 +73,9 @@
     "colLate": "Kech qolish",
     "colAbsent": "Yo'qlik",
     "top15": "Eng yaxshi 15 ta (ball bo'yicha)",
+    "legendGood": "Yaxshi (85+)",
+    "legendOk": "O'rtacha (60–84)",
+    "legendBad": "Past (<60)",
     "noData": "Bu davr uchun ma'lumot yo'q.",
     "loadError": "Reyting ma'lumotlarini yuklab bo'lmadi."
   },
