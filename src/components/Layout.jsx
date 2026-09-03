@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Outlet, useLocation } from 'react-router-dom'
+import BottomTabBar from './BottomTabBar'
 import Sidebar from './Sidebar'
 
 export default function Layout() {
@@ -8,7 +9,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-bg flex">
       <Sidebar />
-      <main className="flex-1 min-w-0 p-6 pt-20 md:pt-8 md:p-8">
+      <main className="flex-1 min-w-0 p-6 pb-28 md:pb-8 md:pt-8 md:p-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -21,6 +22,7 @@ export default function Layout() {
           </motion.div>
         </AnimatePresence>
       </main>
+      <BottomTabBar />
     </div>
   )
 }
