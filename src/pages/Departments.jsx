@@ -99,7 +99,7 @@ export default function Departments() {
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <ScoreBadge score={dept.average_overall_score} />
+                  <ScoreBadge score={dept.average_overall_score} label={t('departments.averageScore')} size="lg" />
                   {isBest && <span className="text-[10px] text-teal-300 font-medium">{t('departments.best')}</span>}
                   {isWorst && (
                     <span className="text-[10px] text-red-300 font-medium">{t('departments.needsAttention')}</span>

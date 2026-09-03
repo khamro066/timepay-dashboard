@@ -100,7 +100,7 @@ export default function DepartmentDetail() {
                   <p className="text-white/40 text-xs truncate">{emp.position}</p>
                 </div>
               </div>
-              <ScoreBadge score={emp.overall_score} />
+              <ScoreBadge score={emp.overall_score} label={t('common.overallScore')} />
             </div>
             <div className="flex gap-4 mt-3 text-xs text-white/50">
               <span>

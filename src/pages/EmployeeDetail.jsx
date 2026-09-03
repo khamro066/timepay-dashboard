@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import PeriodTabs from '../components/PeriodTabs'
+import ScoreExplainer from '../components/ScoreExplainer'
 import StatCard from '../components/StatCard'
 
 function getDateRange(period) {
@@ -112,6 +113,10 @@ export default function EmployeeDetail() {
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
       <div className={`transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-white/40 text-xs font-medium uppercase tracking-wide">{t('employeeDetail.statsTitle')}</span>
+          <ScoreExplainer />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <StatCard label={t('employeeDetail.overallScore')} value={fmtPct(data?.overall_score)} icon={Award} tone="purple" />
           <StatCard label={t('employeeDetail.attendanceRate')} value={fmtPct(data?.attendance_rate)} icon={CheckCircle2} tone="teal" />

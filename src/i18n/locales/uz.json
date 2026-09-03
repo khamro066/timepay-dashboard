@@ -1,4 +1,15 @@
 {
+  "common": {
+    "score": "Ball",
+    "overallScore": "Umumiy ball",
+    "attendanceRate": "Davomat",
+    "punctualityRate": "Vaqtida kelish",
+    "howCalculated": "Bu qanday hisoblanadi?",
+    "attendanceExplain": "Davomat — xodim ishlashi kerak bo'lgan kunlardan nechta foizida ishga chiqqanini ko'rsatadi.",
+    "punctualityExplain": "Vaqtida kelish — xodim kech qolmasdan, belgilangan vaqtda ishga kelgan kunlar foizi.",
+    "overallScoreExplain": "Umumiy ball — davomat va vaqtida kelish ko'rsatkichlarining o'rtachasi. Bu xodimning eng muhim, yakuniy ko'rsatkichi.",
+    "close": "Yopish"
+  },
   "nav": {
     "brand": "Timepay",
     "brandSubtitle": "Analitika",
@@ -58,6 +69,7 @@
   },
   "employeeDetail": {
     "back": "Orqaga",
+    "statsTitle": "Ko'rsatkichlar",
     "overallScore": "Umumiy ball",
     "attendanceRate": "Davomat darajasi",
     "punctualityRate": "Punktuallik darajasi",
@@ -78,6 +90,7 @@
     "employeeCount": "{{count}} xodim",
     "best": "Eng yaxshi",
     "needsAttention": "E'tibor talab qiladi",
+    "averageScore": "O'rtacha ball",
     "attendance": "Davomat",
     "punctuality": "Punktuallik",
     "lateIncidents": "Kech qolishlar",

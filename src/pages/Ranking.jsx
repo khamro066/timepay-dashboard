@@ -8,6 +8,7 @@ import Avatar from '../components/Avatar'
 import PeriodTabs from '../components/PeriodTabs'
 import RankingChart from '../components/RankingChart'
 import ScoreBadge from '../components/ScoreBadge'
+import ScoreExplainer from '../components/ScoreExplainer'
 
 function getDateRange(period) {
   const end = new Date()
@@ -139,7 +140,10 @@ export default function Ranking() {
           transition={{ duration: 0.25 }}
           className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-5 shadow-lg shadow-black/20 mb-6"
         >
-          <h2 className="text-white font-semibold mb-4">{t('ranking.top15')}</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-white font-semibold">{t('ranking.top15')}</h2>
+            <ScoreExplainer />
+          </div>
           {topByScore.length > 0 && <RankingChart data={topByScore} />}
           {topByScore.length === 0 && (
             <p className="text-white/40 text-sm py-4">{t('ranking.noData')}</p>
@@ -192,10 +196,10 @@ export default function Ranking() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-white/60 whitespace-nowrap">{row.department}</td>
-                    <td className="px-4 py-3 text-white/60">{fmtPct(row.attendance_rate)}</td>
-                    <td className="px-4 py-3 text-white/60">{fmtPct(row.punctuality_rate)}</td>
+                    <td className="px-4 py-3 text-white/50 text-xs">{fmtPct(row.attendance_rate)}</td>
+                    <td className="px-4 py-3 text-white/50 text-xs">{fmtPct(row.punctuality_rate)}</td>
                     <td className="px-4 py-3">
-                      <ScoreBadge score={row.overall_score} />
+                      <ScoreBadge score={row.overall_score} size="lg" />
                     </td>
                     <td className="px-4 py-3 text-white/60">{row.late_days}</td>
                     <td className="px-4 py-3 text-white/60">{row.absent_days}</td>
@@ -235,7 +239,7 @@ export default function Ranking() {
                   <p className="text-white font-medium truncate">{row.full_name}</p>
                   <p className="text-white/40 text-xs truncate">{row.department}</p>
                 </div>
-                <ScoreBadge score={row.overall_score} />
+                <ScoreBadge score={row.overall_score} label={t('common.overallScore')} />
               </div>
               <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-white/5 text-center">
                 <div>

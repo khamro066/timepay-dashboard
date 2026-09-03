@@ -1,4 +1,15 @@
 {
+  "common": {
+    "score": "Балл",
+    "overallScore": "Общий балл",
+    "attendanceRate": "Посещаемость",
+    "punctualityRate": "Пунктуальность",
+    "howCalculated": "Как это рассчитывается?",
+    "attendanceExplain": "Посещаемость — процент рабочих дней, в которые сотрудник вышел на работу.",
+    "punctualityExplain": "Пунктуальность — процент дней, когда сотрудник пришёл вовремя, без опоздания.",
+    "overallScoreExplain": "Общий балл — среднее значение посещаемости и пунктуальности. Это главный итоговый показатель сотрудника.",
+    "close": "Закрыть"
+  },
   "nav": {
     "brand": "Timepay",
     "brandSubtitle": "Аналитика",
@@ -58,6 +69,7 @@
   },
   "employeeDetail": {
     "back": "Назад",
+    "statsTitle": "Показатели",
     "overallScore": "Общий балл",
     "attendanceRate": "Посещаемость",
     "punctualityRate": "Пунктуальность",
@@ -78,6 +90,7 @@
     "employeeCount": "{{count}} сотрудников",
     "best": "Лучший",
     "needsAttention": "Требует внимания",
+    "averageScore": "Средний балл",
     "attendance": "Посещаемость",
     "punctuality": "Пунктуальность",
     "lateIncidents": "Опоздания",

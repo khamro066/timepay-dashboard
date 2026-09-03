@@ -7,14 +7,22 @@ function toneClasses(score) {
   return 'bg-red-500/15 text-red-300 border-red-400/30'
 }
 
-export default function ScoreBadge({ score }) {
-  const label = score === null || score === undefined ? '—' : `${Math.round(score * 100)}%`
+const SIZE_CLASSES = {
+  md: 'px-2.5 py-1 text-xs',
+  lg: 'px-3.5 py-1.5 text-base',
+}
+
+export default function ScoreBadge({ score, label, size = 'md' }) {
+  const pctLabel = score === null || score === undefined ? '—' : `${Math.round(score * 100)}%`
 
   return (
-    <span
-      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${toneClasses(score)}`}
-    >
-      {label}
+    <span className="inline-flex flex-col items-end gap-1">
+      <span
+        className={`inline-flex items-center rounded-full font-semibold border ${SIZE_CLASSES[size]} ${toneClasses(score)}`}
+      >
+        {pctLabel}
+      </span>
+      {label && <span className="text-[10px] text-white/40 font-medium whitespace-nowrap">{label}</span>}
     </span>
   )
 }
