@@ -10,6 +10,23 @@
     "overallScoreExplain": "Общий балл — среднее значение посещаемости и пунктуальности. Это главный итоговый показатель сотрудника.",
     "close": "Закрыть"
   },
+  "filters": {
+    "searchPlaceholder": "Поиск по имени...",
+    "allDepartments": "Все отделы",
+    "department": "Отдел",
+    "sortBy": "Сортировка",
+    "sortScoreDesc": "Балл: выс. → низк.",
+    "sortScoreAsc": "Балл: низк. → выс.",
+    "sortNameAsc": "Имя: А-Я",
+    "sortLateDesc": "Опоздания: много → мало",
+    "resultCount": "Показано {{shown}} из {{total}}",
+    "custom": "Другое",
+    "dateFrom": "С",
+    "dateTo": "По",
+    "filterButton": "Фильтр",
+    "clearAll": "Сбросить",
+    "noResults": "Ничего не найдено"
+  },
   "nav": {
     "brand": "Timepay",
     "brandSubtitle": "Аналитика",

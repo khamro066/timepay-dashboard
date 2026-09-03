@@ -1,23 +1,24 @@
 import { motion } from 'framer-motion'
-import { ArrowUpDown, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import Avatar from '../components/Avatar'
-import PeriodTabs from '../components/PeriodTabs'
+import FilterBar from '../components/FilterBar'
 import RankingChart from '../components/RankingChart'
 import ScoreBadge from '../components/ScoreBadge'
 import ScoreExplainer from '../components/ScoreExplainer'
 
-function getDateRange(period) {
+function getDateRange(period, customRange) {
+  if (period === 'Custom') {
+    return { date_from: customRange?.date_from || '', date_to: customRange?.date_to || '' }
+  }
   const end = new Date()
   const endStr = end.toISOString().slice(0, 10)
   const start = new Date(end)
   if (period === 'Week') start.setDate(start.getDate() - 6)
   if (period === 'Month') start.setDate(start.getDate() - 29)
-  const startStr = start.toISOString().slice(0, 10)
-  return { date_from: startStr, date_to: endStr }
+  return { date_from: start.toISOString().slice(0, 10), date_to: endStr }
 }
 
 const COLUMN_KEYS = [
@@ -30,6 +31,28 @@ const COLUMN_KEYS = [
   { key: 'absent_days', labelKey: 'ranking.colAbsent' },
 ]
 
+const SORT_OPTIONS = [
+  { value: 'score_desc', labelKey: 'filters.sortScoreDesc' },
+  { value: 'score_asc', labelKey: 'filters.sortScoreAsc' },
+  { value: 'name_asc', labelKey: 'filters.sortNameAsc' },
+  { value: 'late_desc', labelKey: 'filters.sortLateDesc' },
+]
+
+function sortRows(rows, sort) {
+  const sorted = [...rows]
+  switch (sort) {
+    case 'score_asc':
+      return sorted.sort((a, b) => (a.overall_score ?? -1) - (b.overall_score ?? -1))
+    case 'name_asc':
+      return sorted.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''))
+    case 'late_desc':
+      return sorted.sort((a, b) => b.late_days - a.late_days)
+    case 'score_desc':
+    default:
+      return sorted.sort((a, b) => (b.overall_score ?? -1) - (a.overall_score ?? -1))
+  }
+}
+
 function fmtPct(value) {
   return value === null || value === undefined ? '—' : `${Math.round(value * 100)}%`
 }
@@ -38,25 +61,27 @@ export default function Ranking() {
   const { t } = useTranslation()
   const api = useApi()
   const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const department = searchParams.get('department')
   const [period, setPeriod] = useState('Month')
+  const [customRange, setCustomRange] = useState({ date_from: '', date_to: '' })
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [sort, setSort] = useState({ key: 'overall_score', dir: 'desc' })
+  const [search, setSearch] = useState('')
+  const [department, setDepartment] = useState(null)
+  const [sort, setSort] = useState('score_desc')
+
+  const { date_from, date_to } = getDateRange(period, customRange)
+  const rangeReady = Boolean(date_from && date_to)
 
   useEffect(() => {
+    if (!rangeReady) return
     let cancelled = false
 
     async function load() {
       setLoading(true)
       setError('')
       try {
-        const { date_from, date_to } = getDateRange(period)
-        const params = { date_from, date_to }
-        if (department) params.department = department
-        const res = await api.get('/api/ranking', { params })
+        const res = await api.get('/api/ranking', { params: { date_from, date_to } })
         if (!cancelled) setData(res.data)
       } catch {
         if (!cancelled) setError('ranking.loadError')
@@ -69,38 +94,28 @@ export default function Ranking() {
     return () => {
       cancelled = true
     }
-  }, [api, period, department])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [api, date_from, date_to, rangeReady])
 
-  function clearDepartmentFilter() {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      next.delete('department')
-      return next
-    })
-  }
-
-  const sorted = useMemo(() => {
-    return [...data].sort((a, b) => {
-      const av = a[sort.key]
-      const bv = b[sort.key]
-      if (av === null || av === undefined) return 1
-      if (bv === null || bv === undefined) return -1
-      if (typeof av === 'string') {
-        return sort.dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av)
-      }
-      return sort.dir === 'asc' ? av - bv : bv - av
-    })
-  }, [data, sort])
-
-  const topByScore = useMemo(() => {
-    return [...data]
-      .sort((a, b) => (b.overall_score ?? 0) - (a.overall_score ?? 0))
-      .slice(0, 15)
+  const departmentOptions = useMemo(() => {
+    const set = new Set(data.map((r) => r.department).filter(Boolean))
+    return [...set].sort((a, b) => a.localeCompare(b))
   }, [data])
 
-  function toggleSort(key) {
-    setSort((prev) => (prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' }))
-  }
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return data.filter((r) => {
+      if (department && r.department !== department) return false
+      if (q && !r.full_name?.toLowerCase().includes(q)) return false
+      return true
+    })
+  }, [data, search, department])
+
+  const sorted = useMemo(() => sortRows(filtered, sort), [filtered, sort])
+
+  const topByScore = useMemo(() => {
+    return [...filtered].sort((a, b) => (b.overall_score ?? 0) - (a.overall_score ?? 0)).slice(0, 15)
+  }, [filtered])
 
   return (
     <div>
@@ -113,23 +128,22 @@ export default function Ranking() {
       </motion.h1>
       <p className="text-white/40 text-sm mb-4">{t('ranking.employeeCount', { count: data.length })}</p>
 
-      <div className="flex items-center gap-3 flex-wrap">
-        <PeriodTabs period={period} onChange={setPeriod} />
-        {department && (
-          <motion.button
-            type="button"
-            onClick={clearDepartmentFilter}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center gap-1.5 mb-6 px-3 py-1.5 rounded-lg bg-violet-600/20 border border-violet-500/30 text-violet-200 text-sm"
-          >
-            {department}
-            <X className="w-3.5 h-3.5" />
-          </motion.button>
-        )}
-      </div>
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        department={department}
+        onDepartmentChange={setDepartment}
+        departmentOptions={departmentOptions}
+        period={period}
+        onPeriodChange={setPeriod}
+        customRange={customRange}
+        onCustomRangeChange={setCustomRange}
+        sort={sort}
+        onSortChange={setSort}
+        sortOptions={SORT_OPTIONS}
+        resultShown={sorted.length}
+        resultTotal={data.length}
+      />
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
@@ -145,9 +159,7 @@ export default function Ranking() {
             <ScoreExplainer />
           </div>
           {topByScore.length > 0 && <RankingChart data={topByScore} />}
-          {topByScore.length === 0 && (
-            <p className="text-white/40 text-sm py-4">{t('ranking.noData')}</p>
-          )}
+          {topByScore.length === 0 && <p className="text-white/40 text-sm py-4">{t('ranking.noData')}</p>}
         </motion.div>
 
         {/* Table: md and up */}
@@ -163,15 +175,8 @@ export default function Ranking() {
                 <tr className="border-b border-white/5">
                   <th className="text-left px-4 py-3 text-white/40 font-medium">#</th>
                   {COLUMN_KEYS.map((col) => (
-                    <th
-                      key={col.key}
-                      onClick={() => toggleSort(col.key)}
-                      className="text-left px-4 py-3 text-white/40 font-medium cursor-pointer select-none hover:text-white/70 transition-colors whitespace-nowrap"
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        {t(col.labelKey)}
-                        {sort.key === col.key && <ArrowUpDown className="w-3 h-3" />}
-                      </span>
+                    <th key={col.key} className="text-left px-4 py-3 text-white/40 font-medium whitespace-nowrap">
+                      {t(col.labelKey)}
                     </th>
                   ))}
                 </tr>
@@ -208,7 +213,7 @@ export default function Ranking() {
                 {sorted.length === 0 && (
                   <tr>
                     <td colSpan={COLUMN_KEYS.length + 1} className="px-4 py-8 text-center text-white/40">
-                      {t('ranking.noData')}
+                      {t(data.length === 0 ? 'ranking.noData' : 'filters.noResults')}
                     </td>
                   </tr>
                 )}
@@ -262,7 +267,9 @@ export default function Ranking() {
             </motion.div>
           ))}
           {sorted.length === 0 && (
-            <p className="text-white/40 text-sm text-center py-8">{t('ranking.noData')}</p>
+            <p className="text-white/40 text-sm text-center py-8">
+              {t(data.length === 0 ? 'ranking.noData' : 'filters.noResults')}
+            </p>
           )}
         </div>
       </div>

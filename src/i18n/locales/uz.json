@@ -10,6 +10,23 @@
     "overallScoreExplain": "Umumiy ball — davomat va vaqtida kelish ko'rsatkichlarining o'rtachasi. Bu xodimning eng muhim, yakuniy ko'rsatkichi.",
     "close": "Yopish"
   },
+  "filters": {
+    "searchPlaceholder": "Ism bo'yicha qidirish...",
+    "allDepartments": "Barcha bo'limlar",
+    "department": "Bo'lim",
+    "sortBy": "Saralash",
+    "sortScoreDesc": "Ball: yuqori → past",
+    "sortScoreAsc": "Ball: past → yuqori",
+    "sortNameAsc": "Ism: A-Z",
+    "sortLateDesc": "Kechikish: ko'p → kam",
+    "resultCount": "{{total}} tadan {{shown}} tasi ko'rsatilmoqda",
+    "custom": "Boshqa",
+    "dateFrom": "Dan",
+    "dateTo": "Gacha",
+    "filterButton": "Filtr",
+    "clearAll": "Tozalash",
+    "noResults": "Hech narsa topilmadi"
+  },
   "nav": {
     "brand": "Timepay",
     "brandSubtitle": "Analitika",
