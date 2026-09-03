@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
-import { Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import Avatar from '../components/Avatar'
+import FilterBar from '../components/FilterBar'
 import ScoreBadge from '../components/ScoreBadge'
 
 function last30Days() {
@@ -14,12 +14,33 @@ function last30Days() {
   return { date_from: start.toISOString().slice(0, 10), date_to: end.toISOString().slice(0, 10) }
 }
 
+const SORT_OPTIONS = [
+  { value: 'score_desc', labelKey: 'filters.sortScoreDesc' },
+  { value: 'score_asc', labelKey: 'filters.sortScoreAsc' },
+  { value: 'name_asc', labelKey: 'filters.sortNameAsc' },
+]
+
+function sortRows(rows, sort) {
+  const sorted = [...rows]
+  switch (sort) {
+    case 'score_asc':
+      return sorted.sort((a, b) => (a.overall_score ?? -1) - (b.overall_score ?? -1))
+    case 'name_asc':
+      return sorted.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''))
+    case 'score_desc':
+    default:
+      return sorted.sort((a, b) => (b.overall_score ?? -1) - (a.overall_score ?? -1))
+  }
+}
+
 export default function Employees() {
   const { t } = useTranslation()
   const api = useApi()
   const navigate = useNavigate()
   const [data, setData] = useState([])
-  const [query, setQuery] = useState('')
+  const [search, setSearch] = useState('')
+  const [department, setDepartment] = useState(null)
+  const [sort, setSort] = useState('score_desc')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -46,13 +67,20 @@ export default function Employees() {
     }
   }, [api])
 
+  const departmentOptions = useMemo(() => {
+    const set = new Set(data.map((e) => e.department).filter(Boolean))
+    return [...set].sort((a, b) => a.localeCompare(b))
+  }, [data])
+
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return data
-    return data.filter(
-      (e) => e.full_name?.toLowerCase().includes(q) || e.department?.toLowerCase().includes(q),
-    )
-  }, [data, query])
+    const q = search.trim().toLowerCase()
+    const rows = data.filter((e) => {
+      if (department && e.department !== department) return false
+      if (q && !e.full_name?.toLowerCase().includes(q)) return false
+      return true
+    })
+    return sortRows(rows, sort)
+  }, [data, search, department, sort])
 
   return (
     <div>
@@ -63,23 +91,24 @@ export default function Employees() {
       >
         {t('nav.employees')}
       </motion.h1>
-      <p className="text-white/40 text-sm mb-4">
-        {t('employees.countSubtitle', { filtered: filtered.length, total: data.length })}
-      </p>
+      <p className="text-white/40 text-sm mb-4">{t('employees.countSubtitle', { filtered: filtered.length, total: data.length })}</p>
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
-      <div className="relative mb-6 max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('employees.searchPlaceholder')}
-          className="w-full rounded-xl bg-white/5 border border-white/10 pl-10 pr-3 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-violet-500 transition"
-        />
-      </div>
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        department={department}
+        onDepartmentChange={setDepartment}
+        departmentOptions={departmentOptions}
+        sort={sort}
+        onSortChange={setSort}
+        sortOptions={SORT_OPTIONS}
+        resultShown={filtered.length}
+        resultTotal={data.length}
+      />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}>
         {filtered.map((emp, i) => (
           <motion.div
             key={emp.employee_id}
@@ -114,7 +143,9 @@ export default function Employees() {
           </motion.div>
         ))}
         {!loading && filtered.length === 0 && (
-          <p className="text-white/40 text-sm col-span-full text-center py-8">{t('employees.notFound')}</p>
+          <p className="text-white/40 text-sm col-span-full text-center py-8">
+            {t(data.length === 0 ? 'employees.notFound' : 'filters.noResults')}
+          </p>
         )}
       </div>
     </div>

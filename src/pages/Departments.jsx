@@ -4,10 +4,13 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
-import PeriodTabs from '../components/PeriodTabs'
+import FilterBar from '../components/FilterBar'
 import ScoreBadge from '../components/ScoreBadge'
 
-function getDateRange(period) {
+function getDateRange(period, customRange) {
+  if (period === 'Custom') {
+    return { date_from: customRange?.date_from || '', date_to: customRange?.date_to || '' }
+  }
   const end = new Date()
   const endStr = end.toISOString().slice(0, 10)
   const start = new Date(end)
@@ -25,18 +28,22 @@ export default function Departments() {
   const api = useApi()
   const navigate = useNavigate()
   const [period, setPeriod] = useState('Month')
+  const [customRange, setCustomRange] = useState({ date_from: '', date_to: '' })
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const { date_from, date_to } = getDateRange(period, customRange)
+  const rangeReady = Boolean(date_from && date_to)
+
   useEffect(() => {
+    if (!rangeReady) return
     let cancelled = false
 
     async function load() {
       setLoading(true)
       setError('')
       try {
-        const { date_from, date_to } = getDateRange(period)
         const res = await api.get('/api/departments/summary', { params: { date_from, date_to } })
         if (!cancelled) setData(res.data)
       } catch {
@@ -50,7 +57,8 @@ export default function Departments() {
     return () => {
       cancelled = true
     }
-  }, [api, period])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [api, date_from, date_to, rangeReady])
 
   return (
     <div>
@@ -63,7 +71,7 @@ export default function Departments() {
       </motion.h1>
       <p className="text-white/40 text-sm mb-4">{t('departments.countSubtitle', { count: data.length })}</p>
 
-      <PeriodTabs period={period} onChange={setPeriod} />
+      <FilterBar period={period} onPeriodChange={setPeriod} customRange={customRange} onCustomRangeChange={setCustomRange} />
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
