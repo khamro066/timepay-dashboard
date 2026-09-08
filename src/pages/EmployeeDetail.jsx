@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
+import EmployeeCalendarHeatmap from '../components/EmployeeCalendarHeatmap'
 import EmployeeLeaveManager from '../components/EmployeeLeaveManager'
 import EmployeeStatusSelect from '../components/EmployeeStatusSelect'
 import LegendRow from '../components/LegendRow'
@@ -157,6 +158,8 @@ export default function EmployeeDetail() {
           <StatCard label={t('reports.statTotalWorked')} value={fmtHoursUz(data?.total_worked_minutes)} icon={TimerReset} tone="purple" />
           <StatCard label={t('reports.statOvertime')} value={fmtHoursUz(data?.total_extra_minutes)} icon={PlusCircle} tone="red" />
         </div>
+
+        {data && <EmployeeCalendarHeatmap employeeId={data.employee_id} />}
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}

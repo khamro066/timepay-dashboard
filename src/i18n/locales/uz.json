@@ -113,6 +113,7 @@
     "statusLate": "Kech qoldi",
     "statusAbsent": "Yo'q",
     "statusExcused": "Sababli kelmadi",
+    "statusHoliday": "Bayram",
     "statusDayOff": "Dam olish kuni",
     "employeeStatusLabel": "Xodim holati",
     "statusOptionActive": "Faol",
@@ -128,6 +129,12 @@
     "leaveSaveError": "Saqlanmadi",
     "leaveDelete": "O'chirish",
     "leaveEmpty": "Hozircha sababli kelmasliklar yo'q.",
+    "calendarTitle": "Oylik taqvim",
+    "calendarMonths": [
+      "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",
+      "Iyul", "Avgust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"
+    ],
+    "calendarWeekdays": ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"],
     "noData": "Bu davr uchun ma'lumot yo'q.",
     "loadError": "Xodim ma'lumotlarini yuklab bo'lmadi."
   },
