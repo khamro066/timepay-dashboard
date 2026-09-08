@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
+import EmployeeStatusSelect from '../components/EmployeeStatusSelect'
 import PeriodTabs from '../components/PeriodTabs'
 import ScoreExplainer from '../components/ScoreExplainer'
 import StatCard from '../components/StatCard'
@@ -107,6 +108,16 @@ export default function EmployeeDetail() {
           </p>
         </div>
       </motion.div>
+
+      {data && (
+        <div className="mb-4">
+          <EmployeeStatusSelect
+            employeeId={data.employee_id}
+            status={data.status}
+            onSaved={(next) => setData((prev) => (prev ? { ...prev, status: next } : prev))}
+          />
+        </div>
+      )}
 
       <PeriodTabs period={period} onChange={setPeriod} />
 

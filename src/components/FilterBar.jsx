@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { Archive, Search, SlidersHorizontal, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -132,6 +132,8 @@ export default function FilterBar({
   sort,
   onSortChange,
   sortOptions,
+  showArchived,
+  onShowArchivedChange,
   resultShown,
   resultTotal,
 }) {
@@ -142,14 +144,18 @@ export default function FilterBar({
   const showDepartment = Array.isArray(departmentOptions)
   const showSort = Array.isArray(sortOptions)
   const showPeriod = period !== undefined
+  const showArchivedToggle = typeof onShowArchivedChange === 'function'
   const showCount = resultShown !== undefined && resultTotal !== undefined
 
   const activeExtraFilters =
-    (showDepartment && department ? 1 : 0) + (showSort && sortOptions.length > 0 && sort !== sortOptions[0].value ? 1 : 0)
+    (showDepartment && department ? 1 : 0) +
+    (showSort && sortOptions.length > 0 && sort !== sortOptions[0].value ? 1 : 0) +
+    (showArchivedToggle && showArchived ? 1 : 0)
 
   function clearExtraFilters() {
     if (showDepartment) onDepartmentChange(null)
     if (showSort) onSortChange(sortOptions[0].value)
+    if (showArchivedToggle) onShowArchivedChange(false)
   }
 
   return (
@@ -196,6 +202,18 @@ export default function FilterBar({
               ))}
             </select>
           )}
+          {showArchivedToggle && (
+            <button
+              type="button"
+              onClick={() => onShowArchivedChange(!showArchived)}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                showArchived ? 'bg-violet-600 text-white' : 'bg-white/5 text-white/50 hover:text-white/80 hover:bg-white/10'
+              }`}
+            >
+              <Archive className="w-3.5 h-3.5" />
+              {t('filters.showArchived')}
+            </button>
+          )}
         </div>
 
         {/* Mobile: period stays inline (compact); department + sort collapse into a drawer */}
@@ -208,7 +226,7 @@ export default function FilterBar({
               onCustomRangeChange={onCustomRangeChange}
             />
           )}
-          {(showDepartment || showSort) && (
+          {(showDepartment || showSort || showArchivedToggle) && (
             <motion.button
               type="button"
               onClick={() => setDrawerOpen(true)}
@@ -295,6 +313,20 @@ export default function FilterBar({
                       ))}
                     </select>
                   </div>
+                )}
+                {showArchivedToggle && (
+                  <label className="flex items-center justify-between py-1 cursor-pointer">
+                    <span className="flex items-center gap-2 text-white text-sm font-medium">
+                      <Archive className="w-4 h-4 text-white/50" />
+                      {t('filters.showArchived')}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(showArchived)}
+                      onChange={(e) => onShowArchivedChange(e.target.checked)}
+                      className="w-5 h-5 rounded accent-violet-600"
+                    />
+                  </label>
                 )}
                 {activeExtraFilters > 0 && (
                   <button type="button" onClick={clearExtraFilters} className="text-violet-300 text-sm font-medium text-left">

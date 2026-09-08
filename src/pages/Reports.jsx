@@ -64,6 +64,11 @@ const DETAIL_FIELDS = [
   { key: 'average_check_out_time', labelKey: 'reports.colAvgCheckOut' },
 ]
 
+const STATUS_TAG = {
+  paused: { labelKey: 'employeeDetail.statusOptionPaused', className: 'text-amber-300 bg-amber-500/15' },
+  archived: { labelKey: 'employeeDetail.statusOptionArchived', className: 'text-red-300 bg-red-500/15' },
+}
+
 function fmtVal(row, key) {
   const value = row[key]
   return value === null || value === undefined || value === '' ? '—' : value
@@ -84,6 +89,7 @@ export default function Reports() {
   const [department, setDepartment] = useState(null)
   const [sortDir, setSortDir] = useState('worst')
   const [lateness, setLateness] = useState(null)
+  const [showArchived, setShowArchived] = useState(false)
 
   const { date_from, date_to } = getDateRange(period, customRange)
   const rangeReady = Boolean(date_from && date_to)
@@ -97,7 +103,9 @@ export default function Reports() {
       setLoading(true)
       setError('')
       try {
-        const res = await api.get('/api/reports', { params: { date_from, date_to, period_key: periodKey } })
+        const res = await api.get('/api/reports', {
+          params: { date_from, date_to, period_key: periodKey, include_archived: showArchived },
+        })
         if (!cancelled) setData(res.data)
       } catch {
         if (!cancelled) setError('reports.loadError')
@@ -111,7 +119,7 @@ export default function Reports() {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [api, date_from, date_to, periodKey, rangeReady])
+  }, [api, date_from, date_to, periodKey, showArchived, rangeReady])
 
   useEffect(() => {
     if (!rangeReady) return
@@ -184,7 +192,7 @@ export default function Reports() {
     setExporting(true)
     try {
       const res = await api.get('/api/reports/export', {
-        params: { date_from, date_to, period_key: periodKey },
+        params: { date_from, date_to, period_key: periodKey, include_archived: showArchived },
         responseType: 'blob',
       })
       const url = URL.createObjectURL(new Blob([res.data]))
@@ -223,6 +231,8 @@ export default function Reports() {
         onPeriodChange={setPeriod}
         customRange={customRange}
         onCustomRangeChange={setCustomRange}
+        showArchived={showArchived}
+        onShowArchivedChange={setShowArchived}
         resultShown={filtered.length}
         resultTotal={data.length}
       />
@@ -313,7 +323,16 @@ export default function Reports() {
                             <div className="flex items-center gap-3">
                               <Avatar src={row.profile_image} name={row.full_name} size="sm" />
                               <div className="min-w-0 flex-1">
-                                <p className="text-white font-medium truncate">{row.full_name}</p>
+                                <div className="flex items-center gap-1.5">
+                                  <p className="text-white font-medium truncate">{row.full_name}</p>
+                                  {STATUS_TAG[row.status] && (
+                                    <span
+                                      className={`shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${STATUS_TAG[row.status].className}`}
+                                    >
+                                      {t(STATUS_TAG[row.status].labelKey)}
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="text-white/45 text-xs truncate">
                                   {t('reports.cardSummary', {
                                     present: row.present_days,

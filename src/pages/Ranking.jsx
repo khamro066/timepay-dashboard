@@ -57,6 +57,11 @@ function fmtPct(value) {
   return value === null || value === undefined ? '—' : `${Math.round(value * 100)}%`
 }
 
+const STATUS_TAG = {
+  paused: { labelKey: 'employeeDetail.statusOptionPaused', className: 'text-amber-300 bg-amber-500/15' },
+  archived: { labelKey: 'employeeDetail.statusOptionArchived', className: 'text-red-300 bg-red-500/15' },
+}
+
 export default function Ranking() {
   const { t } = useTranslation()
   const api = useApi()
@@ -69,6 +74,7 @@ export default function Ranking() {
   const [search, setSearch] = useState('')
   const [department, setDepartment] = useState(null)
   const [sort, setSort] = useState('score_desc')
+  const [showArchived, setShowArchived] = useState(false)
 
   const { date_from, date_to } = getDateRange(period, customRange)
   const rangeReady = Boolean(date_from && date_to)
@@ -81,7 +87,7 @@ export default function Ranking() {
       setLoading(true)
       setError('')
       try {
-        const res = await api.get('/api/ranking', { params: { date_from, date_to } })
+        const res = await api.get('/api/ranking', { params: { date_from, date_to, include_archived: showArchived } })
         if (!cancelled) setData(res.data)
       } catch {
         if (!cancelled) setError('ranking.loadError')
@@ -95,7 +101,7 @@ export default function Ranking() {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [api, date_from, date_to, rangeReady])
+  }, [api, date_from, date_to, showArchived, rangeReady])
 
   const departmentOptions = useMemo(() => {
     const set = new Set(data.map((r) => r.department).filter(Boolean))
@@ -141,6 +147,8 @@ export default function Ranking() {
         sort={sort}
         onSortChange={setSort}
         sortOptions={SORT_OPTIONS}
+        showArchived={showArchived}
+        onShowArchivedChange={setShowArchived}
         resultShown={sorted.length}
         resultTotal={data.length}
       />
@@ -198,6 +206,11 @@ export default function Ranking() {
                       <div className="flex items-center gap-2.5">
                         <Avatar src={row.profile_image} name={row.full_name} size="sm" />
                         {row.full_name}
+                        {STATUS_TAG[row.status] && (
+                          <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${STATUS_TAG[row.status].className}`}>
+                            {t(STATUS_TAG[row.status].labelKey)}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-white/60 whitespace-nowrap">{row.department}</td>
@@ -241,7 +254,14 @@ export default function Ranking() {
                 </span>
                 <Avatar src={row.profile_image} name={row.full_name} size="sm" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-white font-medium truncate">{row.full_name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-white font-medium truncate">{row.full_name}</p>
+                    {STATUS_TAG[row.status] && (
+                      <span className={`shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${STATUS_TAG[row.status].className}`}>
+                        {t(STATUS_TAG[row.status].labelKey)}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-white/40 text-xs truncate">{row.department}</p>
                 </div>
                 <ScoreBadge score={row.overall_score} label={t('common.overallScore')} />

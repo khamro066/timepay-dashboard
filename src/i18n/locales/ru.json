@@ -25,7 +25,8 @@
     "dateTo": "По",
     "filterButton": "Фильтр",
     "clearAll": "Сбросить",
-    "noResults": "Ничего не найдено"
+    "noResults": "Ничего не найдено",
+    "showArchived": "Показать архивных"
   },
   "nav": {
     "brand": "Timepay",
@@ -103,6 +104,12 @@
     "statusLate": "Опоздал",
     "statusAbsent": "Отсутствовал",
     "statusDayOff": "Выходной",
+    "employeeStatusLabel": "Статус сотрудника",
+    "statusOptionActive": "Активен",
+    "statusOptionPaused": "Приостановлен",
+    "statusOptionArchived": "В архиве",
+    "statusUpdateSaved": "Сохранено",
+    "statusUpdateError": "Не сохранено",
     "noData": "Нет данных за этот период.",
     "loadError": "Не удалось загрузить данные сотрудника."
   },

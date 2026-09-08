@@ -25,7 +25,8 @@
     "dateTo": "Gacha",
     "filterButton": "Filtr",
     "clearAll": "Tozalash",
-    "noResults": "Hech narsa topilmadi"
+    "noResults": "Hech narsa topilmadi",
+    "showArchived": "Arxivlanganlarni ko'rsatish"
   },
   "nav": {
     "brand": "Timepay",
@@ -103,6 +104,12 @@
     "statusLate": "Kech qoldi",
     "statusAbsent": "Yo'q",
     "statusDayOff": "Dam olish kuni",
+    "employeeStatusLabel": "Xodim holati",
+    "statusOptionActive": "Faol",
+    "statusOptionPaused": "To'xtatilgan",
+    "statusOptionArchived": "Arxivlangan",
+    "statusUpdateSaved": "Saqlandi",
+    "statusUpdateError": "Saqlanmadi",
     "noData": "Bu davr uchun ma'lumot yo'q.",
     "loadError": "Xodim ma'lumotlarini yuklab bo'lmadi."
   },

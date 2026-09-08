@@ -33,6 +33,11 @@ function sortRows(rows, sort) {
   }
 }
 
+const STATUS_TAG = {
+  paused: { labelKey: 'employeeDetail.statusOptionPaused', className: 'text-amber-300 bg-amber-500/15' },
+  archived: { labelKey: 'employeeDetail.statusOptionArchived', className: 'text-red-300 bg-red-500/15' },
+}
+
 export default function Employees() {
   const { t } = useTranslation()
   const api = useApi()
@@ -41,6 +46,7 @@ export default function Employees() {
   const [search, setSearch] = useState('')
   const [department, setDepartment] = useState(null)
   const [sort, setSort] = useState('score_desc')
+  const [showArchived, setShowArchived] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -52,7 +58,7 @@ export default function Employees() {
       setError('')
       try {
         const { date_from, date_to } = last30Days()
-        const res = await api.get('/api/ranking', { params: { date_from, date_to } })
+        const res = await api.get('/api/ranking', { params: { date_from, date_to, include_archived: showArchived } })
         if (!cancelled) setData(res.data)
       } catch {
         if (!cancelled) setError('employees.loadError')
@@ -65,7 +71,7 @@ export default function Employees() {
     return () => {
       cancelled = true
     }
-  }, [api])
+  }, [api, showArchived])
 
   const departmentOptions = useMemo(() => {
     const set = new Set(data.map((e) => e.department).filter(Boolean))
@@ -104,6 +110,8 @@ export default function Employees() {
         sort={sort}
         onSortChange={setSort}
         sortOptions={SORT_OPTIONS}
+        showArchived={showArchived}
+        onShowArchivedChange={setShowArchived}
         resultShown={filtered.length}
         resultTotal={data.length}
       />
@@ -124,7 +132,14 @@ export default function Employees() {
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar src={emp.profile_image} name={emp.full_name} size="sm" />
                 <div className="min-w-0">
-                  <p className="text-white font-medium truncate">{emp.full_name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-white font-medium truncate">{emp.full_name}</p>
+                    {STATUS_TAG[emp.status] && (
+                      <span className={`shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${STATUS_TAG[emp.status].className}`}>
+                        {t(STATUS_TAG[emp.status].labelKey)}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-white/40 text-xs truncate">
                     {emp.department} · {emp.position}
                   </p>
