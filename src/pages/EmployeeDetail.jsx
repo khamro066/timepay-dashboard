@@ -1,13 +1,19 @@
 import { motion } from 'framer-motion'
-import { ArrowLeft, Award, CheckCircle2, Clock, User } from 'lucide-react'
+import { ArrowLeft, Award, CheckCircle2, Clock, Clock3, LogOut, PlusCircle, TimerReset, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import EmployeeStatusSelect from '../components/EmployeeStatusSelect'
+import LegendRow from '../components/LegendRow'
 import PeriodTabs from '../components/PeriodTabs'
 import ScoreExplainer from '../components/ScoreExplainer'
 import StatCard from '../components/StatCard'
+
+function fmtHoursUz(totalMinutes) {
+  const m = totalMinutes || 0
+  return `${Math.floor(m / 60)} soat ${m % 60} daq`
+}
 
 function getDateRange(period) {
   const end = new Date()
@@ -128,10 +134,23 @@ export default function EmployeeDetail() {
           <span className="text-white/40 text-xs font-medium uppercase tracking-wide">{t('employeeDetail.statsTitle')}</span>
           <ScoreExplainer />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <StatCard label={t('employeeDetail.overallScore')} value={fmtPct(data?.overall_score)} icon={Award} tone="purple" />
           <StatCard label={t('employeeDetail.attendanceRate')} value={fmtPct(data?.attendance_rate)} icon={CheckCircle2} tone="teal" />
           <StatCard label={t('employeeDetail.punctualityRate')} value={fmtPct(data?.punctuality_rate)} icon={Clock} tone="amber" />
+        </div>
+
+        <div className="glass-card rounded-2xl p-4 mb-6 flex flex-wrap gap-x-8 gap-y-3">
+          <LegendRow color="#2dd4bf" value={Math.max(0, (data?.present_days ?? 0) - (data?.late_days ?? 0))} label={t('dashboard.ishda')} />
+          <LegendRow color="#fbbf24" value={data?.late_days ?? 0} label={t('dashboard.kech')} />
+          <LegendRow color="#f87171" value={data?.absent_days ?? 0} label={t('dashboard.ishdaEmas')} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <StatCard label={t('reports.statAvgCheckIn')} value={data?.average_check_in_time ?? '—'} icon={Clock3} tone="teal" />
+          <StatCard label={t('reports.colAvgCheckOut')} value={data?.average_check_out_time ?? '—'} icon={LogOut} tone="amber" />
+          <StatCard label={t('reports.statTotalWorked')} value={fmtHoursUz(data?.total_worked_minutes)} icon={TimerReset} tone="purple" />
+          <StatCard label={t('reports.statOvertime')} value={fmtHoursUz(data?.total_extra_minutes)} icon={PlusCircle} tone="red" />
         </div>
 
         <motion.div

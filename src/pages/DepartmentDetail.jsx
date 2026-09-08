@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import Avatar from '../components/Avatar'
+import ListNavRow from '../components/ListNavRow'
 import PeriodTabs from '../components/PeriodTabs'
 import ScoreBadge from '../components/ScoreBadge'
 
@@ -78,44 +79,24 @@ export default function DepartmentDetail() {
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
-      <div
-        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        className={`glass-card rounded-2xl px-5 transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}
       >
-        {data.map((emp, i) => (
-          <motion.div
+        {data.map((emp) => (
+          <ListNavRow
             key={emp.employee_id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: Math.min(i * 0.02, 0.3), duration: 0.2 }}
-            whileHover={{ scale: 1.03, filter: 'brightness(1.1)' }}
-            whileTap={{ scale: 0.96 }}
+            leading={<Avatar src={emp.profile_image} name={emp.full_name} size="md" />}
+            title={emp.full_name}
+            subtitle={emp.position}
+            trailing={<ScoreBadge score={emp.overall_score} />}
             onClick={() => navigate(`/employees/${emp.employee_id}`)}
-            className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-4 shadow-lg shadow-black/20 cursor-pointer"
-          >
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div className="flex items-center gap-3 min-w-0">
-                <Avatar src={emp.profile_image} name={emp.full_name} size="sm" />
-                <div className="min-w-0">
-                  <p className="text-white font-medium truncate">{emp.full_name}</p>
-                  <p className="text-white/40 text-xs truncate">{emp.position}</p>
-                </div>
-              </div>
-              <ScoreBadge score={emp.overall_score} label={t('common.overallScore')} />
-            </div>
-            <div className="flex gap-4 mt-3 text-xs text-white/50">
-              <span>
-                {t('employees.late')}: {emp.late_days}
-              </span>
-              <span>
-                {t('employees.absent')}: {emp.absent_days}
-              </span>
-            </div>
-          </motion.div>
+          />
         ))}
-        {!loading && data.length === 0 && (
-          <p className="text-white/40 text-sm col-span-full text-center py-8">{t('employees.notFound')}</p>
-        )}
-      </div>
+        {!loading && data.length === 0 && <p className="text-white/40 text-sm text-center py-8">{t('employees.notFound')}</p>}
+      </motion.div>
     </div>
   )
 }

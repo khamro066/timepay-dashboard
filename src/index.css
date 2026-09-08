@@ -6,6 +6,34 @@
   --color-surface-light: #211d33;
 }
 
+/* Glassmorphism tokens — dark mode only for now. Soft translucent gradient +
+   visible-but-subtle border + inset top highlight, meant to sit above the
+   blurred color blobs in the app shell background so there's actual light
+   for the "glass" to catch. */
+:root {
+  --glass: linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+  --glass-2: linear-gradient(158deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+  --glass-line: rgba(255, 255, 255, 0.14);
+  --glass-line-soft: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 12px 34px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.glass-card {
+  position: relative;
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(22px) saturate(130%);
+  -webkit-backdrop-filter: blur(22px) saturate(130%);
+}
+
 html,
 body,
 #root {

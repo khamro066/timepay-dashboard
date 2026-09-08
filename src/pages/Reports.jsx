@@ -1,13 +1,15 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowDownAZ, ArrowUpAZ, ChevronDown, Download, Loader2 } from 'lucide-react'
+import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, Clock3, PlusCircle, ChevronDown, Download, Loader2, TimerReset } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApi } from '../api/useApi'
+import AlertCard from '../components/AlertCard'
 import Avatar from '../components/Avatar'
 import FilterBar from '../components/FilterBar'
 import LatenessBars from '../components/LatenessBars'
 import NoteCell from '../components/NoteCell'
 import ScoreBadge from '../components/ScoreBadge'
+import StatCard from '../components/StatCard'
 
 function getDateRange(period, customRange) {
   if (period === 'Custom') {
@@ -72,6 +74,23 @@ const STATUS_TAG = {
 function fmtVal(row, key) {
   const value = row[key]
   return value === null || value === undefined || value === '' ? '—' : value
+}
+
+function fmtHoursUz(totalMinutes) {
+  return `${Math.floor(totalMinutes / 60)} soat ${totalMinutes % 60} daq`
+}
+
+function avgTimeStr(times) {
+  const minutes = times
+    .filter(Boolean)
+    .map((t) => {
+      const [h, m] = t.split(':').map(Number)
+      return h * 60 + m
+    })
+    .filter((m) => !Number.isNaN(m))
+  if (!minutes.length) return null
+  const avg = Math.round(minutes.reduce((a, b) => a + b, 0) / minutes.length)
+  return `${String(Math.floor(avg / 60)).padStart(2, '0')}:${String(avg % 60).padStart(2, '0')}`
 }
 
 export default function Reports() {
@@ -156,6 +175,17 @@ export default function Reports() {
     })
   }, [data, search, department])
 
+  const kpis = useMemo(() => {
+    const avgCheckIn = avgTimeStr(filtered.map((r) => r.average_check_in_time))
+    const totalLateMinutes = filtered.reduce((sum, r) => sum + (r.total_late_minutes || 0), 0)
+    const lateIncidents = filtered.reduce((sum, r) => sum + (r.late_days || 0), 0)
+    const totalWorkedMinutes = filtered.reduce((sum, r) => sum + (r.total_worked_minutes || 0), 0)
+    const totalExtraMinutes = filtered.reduce((sum, r) => sum + (r.total_extra_minutes || 0), 0)
+    return { avgCheckIn, totalLateMinutes, lateIncidents, totalWorkedMinutes, totalExtraMinutes }
+  }, [filtered])
+
+  const lowScorers = useMemo(() => filtered.filter((r) => r.overall_score !== null && r.overall_score < 0.6), [filtered])
+
   const byDepartment = useMemo(() => {
     const groups = {}
     for (const row of filtered) {
@@ -236,6 +266,30 @@ export default function Reports() {
         resultShown={filtered.length}
         resultTotal={data.length}
       />
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatCard label={t('reports.statAvgCheckIn')} value={kpis.avgCheckIn ?? '—'} icon={Clock3} tone="teal" />
+        <StatCard
+          label={t('reports.statTotalLate')}
+          value={fmtHoursUz(kpis.totalLateMinutes)}
+          hint={t('reports.lateIncidentsHint', { count: kpis.lateIncidents })}
+          icon={AlertTriangle}
+          tone="amber"
+        />
+        <StatCard label={t('reports.statTotalWorked')} value={fmtHoursUz(kpis.totalWorkedMinutes)} icon={TimerReset} tone="purple" />
+        <StatCard label={t('reports.statOvertime')} value={fmtHoursUz(kpis.totalExtraMinutes)} icon={PlusCircle} tone="red" />
+      </div>
+
+      {lowScorers.length > 0 && (
+        <AlertCard
+          icon={AlertTriangle}
+          tone="bad"
+          title={t('reports.alertTitle', { count: lowScorers.length })}
+          subtitle={t('reports.alertSubtitle')}
+          actionLabel={t('reports.worstFirst')}
+          onAction={() => setSortDir('worst')}
+        />
+      )}
 
       {lateness && lateness.total > 0 && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-5 mb-6">

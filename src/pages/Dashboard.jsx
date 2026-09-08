@@ -1,18 +1,20 @@
 import { motion } from 'framer-motion'
-import { Clock, UserCheck, Users, UserX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
+import DateStepper from '../components/DateStepper'
+import LegendRow from '../components/LegendRow'
 import PeriodTabs from '../components/PeriodTabs'
+import RingChart from '../components/RingChart'
 import ScoreBadge from '../components/ScoreBadge'
-import StatCard from '../components/StatCard'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
-function getDateRange(period) {
+function getDateRange(period, selectedDate) {
+  if (period === 'Today') return { date_from: selectedDate, date_to: selectedDate }
   const end = new Date()
   const endStr = end.toISOString().slice(0, 10)
   const start = new Date(end)
@@ -32,6 +34,7 @@ export default function Dashboard() {
   const api = useApi()
   const navigate = useNavigate()
   const [period, setPeriod] = useState('Today')
+  const [selectedDate, setSelectedDate] = useState(todayStr())
   const [stats, setStats] = useState(null)
   const [topFive, setTopFive] = useState([])
   const [loading, setLoading] = useState(true)
@@ -44,7 +47,7 @@ export default function Dashboard() {
       setLoading(true)
       setError('')
       try {
-        const { date_from, date_to } = getDateRange(period)
+        const { date_from, date_to } = getDateRange(period, selectedDate)
 
         if (period === 'Today') {
           const [statsRes, rankRes] = await Promise.all([
@@ -79,7 +82,11 @@ export default function Dashboard() {
     return () => {
       cancelled = true
     }
-  }, [api, period])
+  }, [api, period, selectedDate])
+
+  const ontimeCount = Math.max(0, (stats?.present ?? 0) - (stats?.late ?? 0))
+  const workdayTotal = (stats?.present ?? 0) + (stats?.absent ?? 0)
+  const attendanceRate = workdayTotal > 0 ? Math.round(((stats?.present ?? 0) / workdayTotal) * 100) : 0
 
   return (
     <div>
@@ -90,7 +97,13 @@ export default function Dashboard() {
       >
         {t('nav.dashboard')}
       </motion.h1>
-      <p className="text-white/40 text-sm mb-4">{todayStr()}</p>
+      {period === 'Today' ? (
+        <div className="mb-4">
+          <DateStepper date={selectedDate} onChange={setSelectedDate} maxDate={todayStr()} />
+        </div>
+      ) : (
+        <p className="text-white/40 text-sm mb-4">{todayStr()}</p>
+      )}
 
       <PeriodTabs period={period} onChange={setPeriod} />
 
@@ -99,18 +112,31 @@ export default function Dashboard() {
       <div
         className={`transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard label={t('dashboard.barchasi')} value={stats?.total_employees ?? 0} icon={Users} tone="purple" />
-          <StatCard label={t('dashboard.ishda')} value={stats?.present ?? 0} icon={UserCheck} tone="teal" />
-          <StatCard label={t('dashboard.kech')} value={stats?.late ?? 0} icon={Clock} tone="amber" />
-          <StatCard label={t('dashboard.ishdaEmas')} value={stats?.absent ?? 0} icon={UserX} tone="red" />
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="glass-card rounded-3xl p-5 mb-8"
+        >
+          <div className="flex items-center gap-6">
+            <RingChart pct={attendanceRate} label={t('dashboard.ishda')} size={104} />
+            <div className="flex-1 min-w-0 flex flex-col gap-3">
+              <LegendRow color="#2dd4bf" value={ontimeCount} label={t('dashboard.ishda')} />
+              <LegendRow color="#fbbf24" value={stats?.late ?? 0} label={t('dashboard.kech')} />
+              <LegendRow color="#f87171" value={stats?.absent ?? 0} label={t('dashboard.ishdaEmas')} />
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-sm">
+            <span className="text-white/45">{t('dashboard.barchasi')}</span>
+            <span className="text-white font-semibold tabular-nums">{stats?.total_employees ?? 0}</span>
+          </div>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.25 }}
-          className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-5 shadow-lg shadow-black/20"
+          className="glass-card rounded-3xl p-5"
         >
           <h2 className="text-white font-semibold mb-4">{t(TOP_LABEL_KEY[period])}</h2>
           <div className="flex flex-col gap-1">

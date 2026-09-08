@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Archive, Search, SlidersHorizontal, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import PillGroup from './PillGroup'
 
 const PERIOD_TABS = [
   { value: 'Today', key: 'period.today' },
@@ -158,6 +159,11 @@ export default function FilterBar({
     if (showArchivedToggle) onShowArchivedChange(false)
   }
 
+  const departmentPillOptions = showDepartment
+    ? [{ value: null, label: t('filters.allDepartments') }, ...departmentOptions.map((d) => ({ value: d, label: d }))]
+    : []
+  const sortPillOptions = showSort ? sortOptions.map((opt) => ({ value: opt.value, label: t(opt.labelKey) })) : []
+
   return (
     <div className="mb-6">
       <div className="flex flex-col md:flex-row md:items-start gap-3">
@@ -174,34 +180,9 @@ export default function FilterBar({
             />
           )}
           {showDepartment && (
-            <select
-              value={department ?? ''}
-              onChange={(e) => onDepartmentChange(e.target.value || null)}
-              className="rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 transition cursor-pointer"
-            >
-              <option value="" className="bg-surface-light">
-                {t('filters.allDepartments')}
-              </option>
-              {departmentOptions.map((d) => (
-                <option key={d} value={d} className="bg-surface-light">
-                  {d}
-                </option>
-              ))}
-            </select>
+            <PillGroup options={departmentPillOptions} value={department} onChange={onDepartmentChange} className="max-w-[280px]" />
           )}
-          {showSort && (
-            <select
-              value={sort}
-              onChange={(e) => onSortChange(e.target.value)}
-              className="rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 transition cursor-pointer"
-            >
-              {sortOptions.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-surface-light">
-                  {t(opt.labelKey)}
-                </option>
-              ))}
-            </select>
-          )}
+          {showSort && <PillGroup options={sortPillOptions} value={sort} onChange={onSortChange} className="max-w-[320px]" />}
           {showArchivedToggle && (
             <button
               type="button"
@@ -284,34 +265,13 @@ export default function FilterBar({
                 {showDepartment && (
                   <div>
                     <label className="block text-white/40 text-xs font-medium mb-1.5">{t('filters.department')}</label>
-                    <select
-                      value={department ?? ''}
-                      onChange={(e) => onDepartmentChange(e.target.value || null)}
-                      className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    >
-                      <option value="">{t('filters.allDepartments')}</option>
-                      {departmentOptions.map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
+                    <PillGroup options={departmentPillOptions} value={department} onChange={onDepartmentChange} wrap />
                   </div>
                 )}
                 {showSort && (
                   <div>
                     <label className="block text-white/40 text-xs font-medium mb-1.5">{t('filters.sortBy')}</label>
-                    <select
-                      value={sort}
-                      onChange={(e) => onSortChange(e.target.value)}
-                      className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    >
-                      {sortOptions.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {t(opt.labelKey)}
-                        </option>
-                      ))}
-                    </select>
+                    <PillGroup options={sortPillOptions} value={sort} onChange={onSortChange} wrap />
                   </div>
                 )}
                 {showArchivedToggle && (

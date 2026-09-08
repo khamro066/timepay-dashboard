@@ -15,7 +15,8 @@ const iconClasses = {
   red: 'text-red-300 bg-red-500/10',
 }
 
-export default function StatCard({ label, value, icon: Icon, tone = 'purple' }) {
+export default function StatCard({ label, value, hint, icon: Icon, tone = 'purple' }) {
+  const isNumeric = typeof value === 'number'
   return (
     <motion.div
       whileHover={{ scale: 1.03, filter: 'brightness(1.12)' }}
@@ -29,9 +30,8 @@ export default function StatCard({ label, value, icon: Icon, tone = 'purple' }) 
           <Icon className="w-4 h-4" />
         </div>
       </div>
-      <div className="text-3xl font-bold text-white tabular-nums">
-        <CountUp value={value} />
-      </div>
+      <div className="text-3xl font-bold text-white tabular-nums">{isNumeric ? <CountUp value={value} /> : value}</div>
+      {hint && <p className="text-white/40 text-xs mt-1">{hint}</p>}
     </motion.div>
   )
 }

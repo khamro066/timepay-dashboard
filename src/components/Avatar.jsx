@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { colorForKey } from '../utils/colorHash'
 
 function getInitials(name) {
   if (!name) return '?'
@@ -18,10 +19,11 @@ export default function Avatar({ src, name, size = 'md', className = '' }) {
   const [failed, setFailed] = useState(false)
   const showImage = Boolean(src) && !failed
   const sizeClass = SIZE_CLASSES[size] ?? SIZE_CLASSES.md
+  const color = colorForKey(name)
 
   return (
     <div
-      className={`rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-violet-500/20 border border-white/10 text-violet-300 font-semibold ${sizeClass} ${className}`}
+      className={`rounded-full overflow-hidden shrink-0 flex items-center justify-center border border-white/10 font-semibold ${color.bg} ${color.text} ${sizeClass} ${className}`}
     >
       {showImage ? (
         <img src={src} alt="" onError={() => setFailed(true)} className="w-full h-full object-cover" />
