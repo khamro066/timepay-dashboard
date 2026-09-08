@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import Avatar from '../components/Avatar'
+import DisciplineTiers from '../components/DisciplineTiers'
 import FilterBar from '../components/FilterBar'
 import RankingChart from '../components/RankingChart'
 import ScoreBadge from '../components/ScoreBadge'
@@ -123,6 +124,22 @@ export default function Ranking() {
     return [...filtered].sort((a, b) => (b.overall_score ?? 0) - (a.overall_score ?? 0)).slice(0, 15)
   }, [filtered])
 
+  const disciplineTiers = useMemo(() => {
+    const scored = filtered.filter((r) => r.overall_score !== null && r.overall_score !== undefined)
+    const counts = {
+      perfect: scored.filter((r) => r.overall_score >= 1).length,
+      tier95: scored.filter((r) => r.overall_score >= 0.95 && r.overall_score < 1).length,
+      tier85: scored.filter((r) => r.overall_score >= 0.85 && r.overall_score < 0.95).length,
+      tier60: scored.filter((r) => r.overall_score >= 0.6 && r.overall_score < 0.85).length,
+      low: scored.filter((r) => r.overall_score < 0.6).length,
+    }
+    const lowNames = scored
+      .filter((r) => r.overall_score < 0.6)
+      .sort((a, b) => (a.overall_score ?? 0) - (b.overall_score ?? 0))
+      .map((r) => r.full_name)
+    return { total: scored.length, counts, lowNames }
+  }, [filtered])
+
   return (
     <div>
       <motion.h1
@@ -168,6 +185,21 @@ export default function Ranking() {
           </div>
           {topByScore.length > 0 && <RankingChart data={topByScore} />}
           {topByScore.length === 0 && <p className="text-white/40 text-sm py-4">{t('ranking.noData')}</p>}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.25 }}
+          className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-5 shadow-lg shadow-black/20 mb-6"
+        >
+          <h2 className="text-white font-semibold mb-1">{t('ranking.disciplineTitle')}</h2>
+          <p className="text-white/40 text-xs mb-4">{t('ranking.disciplineSubtitle')}</p>
+          {disciplineTiers.total > 0 ? (
+            <DisciplineTiers total={disciplineTiers.total} counts={disciplineTiers.counts} lowNames={disciplineTiers.lowNames} />
+          ) : (
+            <p className="text-white/40 text-sm py-4">{t('ranking.noData')}</p>
+          )}
         </motion.div>
 
         {/* Table: md and up */}
