@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useApi } from '../api/useApi'
 import AlertCard from '../components/AlertCard'
 import Avatar from '../components/Avatar'
+import DayOfWeekChart from '../components/DayOfWeekChart'
 import FilterBar from '../components/FilterBar'
 import LatenessBars from '../components/LatenessBars'
 import NoteCell from '../components/NoteCell'
@@ -108,6 +109,7 @@ export default function Reports() {
   const [department, setDepartment] = useState(null)
   const [sortDir, setSortDir] = useState('worst')
   const [lateness, setLateness] = useState(null)
+  const [dayOfWeek, setDayOfWeek] = useState(null)
   const [showArchived, setShowArchived] = useState(false)
 
   const { date_from, date_to } = getDateRange(period, customRange)
@@ -156,6 +158,27 @@ export default function Reports() {
     }
 
     loadLateness()
+    return () => {
+      cancelled = true
+    }
+  }, [api, date_from, date_to, department, rangeReady])
+
+  useEffect(() => {
+    if (!rangeReady) return
+    let cancelled = false
+
+    async function loadDayOfWeek() {
+      try {
+        const params = { date_from, date_to }
+        if (department) params.department = department
+        const res = await api.get('/api/day-of-week-stats', { params })
+        if (!cancelled) setDayOfWeek(res.data)
+      } catch {
+        if (!cancelled) setDayOfWeek(null)
+      }
+    }
+
+    loadDayOfWeek()
     return () => {
       cancelled = true
     }
@@ -296,6 +319,14 @@ export default function Reports() {
           <h2 className="text-white font-semibold">{t('reports.latenessTitle')}</h2>
           <p className="text-white/40 text-xs mb-4">{t('reports.latenessSubtitle')}</p>
           <LatenessBars buckets={lateness.buckets} />
+        </motion.div>
+      )}
+
+      {dayOfWeek && dayOfWeek.some((d) => d.total > 0) && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-5 mb-6">
+          <h2 className="text-white font-semibold">{t('reports.weekdayTitle')}</h2>
+          <p className="text-white/40 text-xs mb-4">{t('reports.weekdaySubtitle')}</p>
+          <DayOfWeekChart data={dayOfWeek} />
         </motion.div>
       )}
 
