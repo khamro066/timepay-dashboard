@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
+import EmployeeLeaveManager from '../components/EmployeeLeaveManager'
 import EmployeeStatusSelect from '../components/EmployeeStatusSelect'
 import LegendRow from '../components/LegendRow'
 import PeriodTabs from '../components/PeriodTabs'
@@ -30,6 +31,7 @@ function fmtPct(value) {
 
 function dayStatus(day) {
   if (!day.is_working_day) return { labelKey: 'employeeDetail.statusDayOff', className: 'text-white/30 bg-white/5' }
+  if (day.absent && day.excused) return { labelKey: 'employeeDetail.statusExcused', className: 'text-violet-300 bg-violet-500/15' }
   if (day.absent) return { labelKey: 'employeeDetail.statusAbsent', className: 'text-red-300 bg-red-500/15' }
   if (day.late) return { labelKey: 'employeeDetail.statusLate', className: 'text-amber-300 bg-amber-500/15' }
   return { labelKey: 'employeeDetail.statusPresent', className: 'text-teal-300 bg-teal-500/15' }
@@ -45,6 +47,7 @@ export default function EmployeeDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [imageFailed, setImageFailed] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -70,7 +73,7 @@ export default function EmployeeDetail() {
     return () => {
       cancelled = true
     }
-  }, [api, id, period])
+  }, [api, id, period, refreshKey])
 
   const days = data?.days ? [...data.days].reverse() : []
 
@@ -124,6 +127,8 @@ export default function EmployeeDetail() {
           />
         </div>
       )}
+
+      {data && <EmployeeLeaveManager employeeId={data.employee_id} onChanged={() => setRefreshKey((k) => k + 1)} />}
 
       <PeriodTabs period={period} onChange={setPeriod} />
 
