@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Archive, Search, SlidersHorizontal, X } from 'lucide-react'
+import { Archive, ChevronDown, Search, SlidersHorizontal, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PillGroup from './PillGroup'
@@ -54,6 +54,43 @@ function SearchInput({ value, onChange, placeholder }) {
           <X className="w-3.5 h-3.5" />
         </button>
       )}
+    </div>
+  )
+}
+
+// Styled native select — used for dimensions with too many values for a pill
+// row (e.g. position). Pill-shaped inline on desktop, full-width in the mobile
+// drawer.
+function SelectControl({ value, onChange, options, label, allLabel, block = false }) {
+  const active = Boolean(value)
+  return (
+    <div className={`relative ${block ? 'w-full' : 'shrink-0'}`}>
+      <select
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value || null)}
+        aria-label={label}
+        className={`w-full appearance-none border text-sm font-medium cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 [&>option]:bg-surface-light [&>option]:text-white ${
+          block
+            ? 'rounded-xl bg-white/5 border-white/10 py-2.5 pl-3.5 pr-9 text-white'
+            : `rounded-full py-2 pl-3.5 pr-9 ${
+                active
+                  ? 'bg-violet-600 border-violet-600 text-white'
+                  : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white/80'
+              }`
+        }`}
+      >
+        <option value="">{allLabel}</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${
+          !block && active ? 'text-white' : 'text-white/40'
+        }`}
+      />
     </div>
   )
 }
@@ -126,6 +163,9 @@ export default function FilterBar({
   department,
   onDepartmentChange,
   departmentOptions,
+  position,
+  onPositionChange,
+  positionOptions,
   period,
   onPeriodChange,
   customRange,
@@ -143,6 +183,7 @@ export default function FilterBar({
 
   const showSearch = typeof onSearchChange === 'function'
   const showDepartment = Array.isArray(departmentOptions)
+  const showPosition = Array.isArray(positionOptions)
   const showSort = Array.isArray(sortOptions)
   const showPeriod = period !== undefined
   const showArchivedToggle = typeof onShowArchivedChange === 'function'
@@ -150,11 +191,13 @@ export default function FilterBar({
 
   const activeExtraFilters =
     (showDepartment && department ? 1 : 0) +
+    (showPosition && position ? 1 : 0) +
     (showSort && sortOptions.length > 0 && sort !== sortOptions[0].value ? 1 : 0) +
     (showArchivedToggle && showArchived ? 1 : 0)
 
   function clearExtraFilters() {
     if (showDepartment) onDepartmentChange(null)
+    if (showPosition) onPositionChange(null)
     if (showSort) onSortChange(sortOptions[0].value)
     if (showArchivedToggle) onShowArchivedChange(false)
   }
@@ -165,7 +208,14 @@ export default function FilterBar({
   const sortPillOptions = showSort ? sortOptions.map((opt) => ({ value: opt.value, label: t(opt.labelKey) })) : []
 
   return (
-    <div className="mb-6">
+    // Fragment, not a wrapper div: the sticky bar's containing block must be the
+    // tall page root (so it has room to stick), and the fixed drawer must be its
+    // sibling — not a child of a `sticky`+`z-index`+`backdrop-blur` element,
+    // which would trap the drawer's overlay behind the bottom nav.
+    <>
+      {/* Pinned to the top of the scroll area so search + filters stay reachable
+          through a long list. Full-bleed background covers content scrolling under. */}
+      <div className="sticky top-0 z-20 -mx-6 mb-4 border-b border-white/[0.06] bg-bg/90 px-6 pt-3 pb-3 backdrop-blur-md md:-mx-8 md:px-8">
       <div className="flex flex-col md:flex-row md:items-start gap-3">
         {showSearch && <SearchInput value={search} onChange={onSearchChange} placeholder={searchPlaceholder} />}
 
@@ -182,6 +232,15 @@ export default function FilterBar({
           {showDepartment && (
             <PillGroup options={departmentPillOptions} value={department} onChange={onDepartmentChange} className="max-w-[280px]" />
           )}
+          {showPosition && (
+            <SelectControl
+              value={position}
+              onChange={onPositionChange}
+              options={positionOptions}
+              label={t('filters.position')}
+              allLabel={t('filters.allPositions')}
+            />
+          )}
           {showSort && <PillGroup options={sortPillOptions} value={sort} onChange={onSortChange} className="max-w-[320px]" />}
           {showArchivedToggle && (
             <button
@@ -197,7 +256,7 @@ export default function FilterBar({
           )}
         </div>
 
-        {/* Mobile: period stays inline (compact); department + sort collapse into a drawer */}
+        {/* Mobile: period stays inline (compact); department + position + sort collapse into a drawer */}
         <div className="md:hidden flex items-center gap-2 flex-wrap">
           {showPeriod && (
             <PeriodControl
@@ -207,7 +266,7 @@ export default function FilterBar({
               onCustomRangeChange={onCustomRangeChange}
             />
           )}
-          {(showDepartment || showSort || showArchivedToggle) && (
+          {(showDepartment || showPosition || showSort || showArchivedToggle) && (
             <motion.button
               type="button"
               onClick={() => setDrawerOpen(true)}
@@ -229,8 +288,10 @@ export default function FilterBar({
       {showCount && (
         <p className="text-white/40 text-xs mt-2.5">{t('filters.resultCount', { shown: resultShown, total: resultTotal })}</p>
       )}
+      </div>
 
-      {/* Mobile bottom-sheet drawer */}
+      {/* Mobile bottom-sheet drawer — sibling of the sticky bar so its fixed
+          overlay is positioned against the viewport, above the bottom nav. */}
       <AnimatePresence>
         {drawerOpen && (
           <>
@@ -266,6 +327,19 @@ export default function FilterBar({
                   <div>
                     <label className="block text-white/40 text-xs font-medium mb-1.5">{t('filters.department')}</label>
                     <PillGroup options={departmentPillOptions} value={department} onChange={onDepartmentChange} wrap />
+                  </div>
+                )}
+                {showPosition && (
+                  <div>
+                    <label className="block text-white/40 text-xs font-medium mb-1.5">{t('filters.position')}</label>
+                    <SelectControl
+                      value={position}
+                      onChange={onPositionChange}
+                      options={positionOptions}
+                      label={t('filters.position')}
+                      allLabel={t('filters.allPositions')}
+                      block
+                    />
                   </div>
                 )}
                 {showSort && (
@@ -307,6 +381,6 @@ export default function FilterBar({
           </>
         )}
       </AnimatePresence>
-    </div>
+    </>
   )
 }

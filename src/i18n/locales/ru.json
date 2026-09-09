@@ -7,8 +7,11 @@
   },
   "filters": {
     "searchPlaceholder": "Поиск по имени...",
+    "all": "Все",
     "allDepartments": "Все отделы",
     "department": "Отдел",
+    "position": "Должность",
+    "allPositions": "Все должности",
     "sortBy": "Сортировка",
     "sortAttendanceDesc": "Посещаемость: выс. → низк.",
     "sortAttendanceAsc": "Посещаемость: низк. → выс.",

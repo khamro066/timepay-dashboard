@@ -8,6 +8,7 @@ import {
   dayOfMonth,
   weekdayIndex,
 } from '../utils/attendanceStatus'
+import Avatar from './Avatar'
 
 // day_off and no_data share the neutral swatch, so the legend entry for
 // day_off carries a label that covers both.
@@ -99,9 +100,12 @@ export default function ScheduleMatrix({ dates, employees }) {
                 {group.employees.map((emp) => (
                   <tr key={emp.employee_id}>
                     <td className="sticky left-0 z-10 bg-surface pr-3 border-r border-white/10">
-                      <span className="block max-w-[176px] overflow-hidden text-ellipsis whitespace-nowrap text-white/80 text-[13px]">
-                        {emp.full_name}
-                      </span>
+                      <div className="flex items-center gap-2 py-0.5">
+                        <Avatar src={emp.profile_image} name={emp.full_name} size="xs" />
+                        <span className="block max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap text-white/80 text-[13px]">
+                          {emp.full_name}
+                        </span>
+                      </div>
                     </td>
                     {emp.days.map((day) => (
                       <td key={day.date} className="p-[1.5px]">
@@ -141,7 +145,10 @@ export default function ScheduleMatrix({ dates, employees }) {
             <div className="flex flex-col gap-1.5">
               {group.employees.map((emp) => (
                 <div key={emp.employee_id} className="rounded-lg bg-white/[0.03] border border-white/5 px-3 py-2">
-                  <p className="text-white/80 text-[13px] font-medium truncate mb-1.5">{emp.full_name}</p>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Avatar src={emp.profile_image} name={emp.full_name} size="xs" />
+                    <p className="text-white/80 text-[13px] font-medium truncate">{emp.full_name}</p>
+                  </div>
                   <div className="grid gap-1" style={{ gridTemplateColumns: MOBILE_GRID }}>
                     {Array.from({ length: leadingBlanks }).map((_, i) => (
                       <div key={`blank-${i}`} />

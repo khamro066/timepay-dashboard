@@ -7,11 +7,11 @@ const TABS = [
   { value: 'Month', key: 'period.month' },
 ]
 
-export default function PeriodTabs({ period, onChange }) {
+export default function PeriodTabs({ period, onChange, className = 'mb-6' }) {
   const { t } = useTranslation()
 
   return (
-    <div className="inline-flex bg-white/5 rounded-xl p-1 mb-6">
+    <div className={`inline-flex bg-white/5 rounded-xl p-1 ${className}`}>
       {TABS.map((tab) => (
         <button
           key={tab.value}

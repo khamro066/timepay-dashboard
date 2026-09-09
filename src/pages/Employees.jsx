@@ -45,6 +45,7 @@ export default function Employees() {
   const [data, setData] = useState([])
   const [search, setSearch] = useState('')
   const [department, setDepartment] = useState(null)
+  const [position, setPosition] = useState(null)
   const [sort, setSort] = useState('attendance_desc')
   const [showArchived, setShowArchived] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -78,15 +79,30 @@ export default function Employees() {
     return [...set].sort((a, b) => a.localeCompare(b))
   }, [data])
 
+  // Distinct positions actually present in the data, most common first.
+  const positionOptions = useMemo(() => {
+    const counts = new Map()
+    for (const e of data) {
+      if (e.position) counts.set(e.position, (counts.get(e.position) ?? 0) + 1)
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([p]) => p)
+  }, [data])
+
+  // Clear the position filter if a data reload (e.g. archived toggle) removes it.
+  useEffect(() => {
+    if (position && !positionOptions.includes(position)) setPosition(null)
+  }, [position, positionOptions])
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     const rows = data.filter((e) => {
       if (department && e.department !== department) return false
+      if (position && e.position !== position) return false
       if (q && !e.full_name?.toLowerCase().includes(q)) return false
       return true
     })
     return sortRows(rows, sort)
-  }, [data, search, department, sort])
+  }, [data, search, department, position, sort])
 
   return (
     <div>
@@ -107,6 +123,9 @@ export default function Employees() {
         department={department}
         onDepartmentChange={setDepartment}
         departmentOptions={departmentOptions}
+        position={position}
+        onPositionChange={setPosition}
+        positionOptions={positionOptions}
         sort={sort}
         onSortChange={setSort}
         sortOptions={SORT_OPTIONS}

@@ -1,11 +1,13 @@
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
+import Avatar from '../components/Avatar'
 import DateStepper from '../components/DateStepper'
 import LegendRow from '../components/LegendRow'
 import PeriodTabs from '../components/PeriodTabs'
+import PillGroup from '../components/PillGroup'
 import RingChart from '../components/RingChart'
 import ScoreBadge from '../components/ScoreBadge'
 
@@ -41,58 +43,98 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const [period, setPeriod] = useState('Today')
   const [selectedDate, setSelectedDate] = useState(todayStr())
-  const [stats, setStats] = useState(null)
-  const [topFive, setTopFive] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [business, setBusiness] = useState(null)
+  const [rankRows, setRankRows] = useState([])
+  const [todayStats, setTodayStats] = useState(null)
+  const [rankLoading, setRankLoading] = useState(true)
+  const [statsLoading, setStatsLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const { date_from, date_to } = getDateRange(period, selectedDate)
+
+  // Ranking rows for the current period — always fetched for every business, so
+  // the business filter list stays stable and Top-5 can filter client-side.
   useEffect(() => {
     let cancelled = false
-
-    async function load() {
-      setLoading(true)
-      setError('')
-      try {
-        const { date_from, date_to } = getDateRange(period, selectedDate)
-
-        if (period === 'Today') {
-          const [statsRes, rankRes] = await Promise.all([
-            api.get('/api/company/daily-stats', { params: { date: date_from } }),
-            api.get('/api/ranking', { params: { date_from, date_to } }),
-          ])
-          if (!cancelled) {
-            setStats(statsRes.data)
-            setTopFive(topFiveByAttendance(rankRes.data))
-          }
-        } else {
-          const rankRes = await api.get('/api/ranking', { params: { date_from, date_to } })
-          if (!cancelled) {
-            const rows = rankRes.data
-            setStats({
-              total_employees: rows.length,
-              present: rows.reduce((sum, r) => sum + r.present_days, 0),
-              late: rows.reduce((sum, r) => sum + r.late_days, 0),
-              absent: rows.reduce((sum, r) => sum + r.absent_days, 0),
-            })
-            setTopFive(topFiveByAttendance(rows))
-          }
-        }
-      } catch {
+    setRankLoading(true)
+    setError('')
+    api
+      .get('/api/ranking', { params: { date_from, date_to } })
+      .then((res) => {
+        if (!cancelled) setRankRows(res.data)
+      })
+      .catch(() => {
         if (!cancelled) setError('dashboard.loadError')
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    load()
+      })
+      .finally(() => {
+        if (!cancelled) setRankLoading(false)
+      })
     return () => {
       cancelled = true
     }
-  }, [api, period, selectedDate])
+  }, [api, date_from, date_to])
 
+  // "Today" headcount comes from the dedicated endpoint, which is business-aware.
+  useEffect(() => {
+    if (period !== 'Today') {
+      setStatsLoading(false)
+      return
+    }
+    let cancelled = false
+    setStatsLoading(true)
+    const params = { date: selectedDate }
+    if (business) params.department = business
+    api
+      .get('/api/company/daily-stats', { params })
+      .then((res) => {
+        if (!cancelled) setTodayStats(res.data)
+      })
+      .catch(() => {
+        if (!cancelled) setError('dashboard.loadError')
+      })
+      .finally(() => {
+        if (!cancelled) setStatsLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [api, period, selectedDate, business])
+
+  const businessOptions = useMemo(
+    () => [...new Set(rankRows.map((r) => r.department).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [rankRows],
+  )
+
+  useEffect(() => {
+    if (business && businessOptions.length > 0 && !businessOptions.includes(business)) setBusiness(null)
+  }, [business, businessOptions])
+
+  const businessRows = useMemo(
+    () => (business ? rankRows.filter((r) => r.department === business) : rankRows),
+    [rankRows, business],
+  )
+
+  const topFive = useMemo(() => topFiveByAttendance(businessRows), [businessRows])
+
+  const stats = useMemo(() => {
+    if (period === 'Today') return todayStats
+    return {
+      total_employees: businessRows.length,
+      present: businessRows.reduce((sum, r) => sum + r.present_days, 0),
+      late: businessRows.reduce((sum, r) => sum + r.late_days, 0),
+      absent: businessRows.reduce((sum, r) => sum + r.absent_days, 0),
+    }
+  }, [period, todayStats, businessRows])
+
+  const loading = rankLoading || (period === 'Today' && statsLoading)
   const ontimeCount = Math.max(0, (stats?.present ?? 0) - (stats?.late ?? 0))
   const workdayTotal = (stats?.present ?? 0) + (stats?.absent ?? 0)
   const attendanceRate = workdayTotal > 0 ? Math.round(((stats?.present ?? 0) / workdayTotal) * 100) : 0
+
+  const businessPillOptions = [
+    { value: null, label: t('filters.all') },
+    ...businessOptions.map((b) => ({ value: b, label: b })),
+  ]
 
   return (
     <div>
@@ -103,21 +145,25 @@ export default function Dashboard() {
       >
         {t('nav.dashboard')}
       </motion.h1>
-      {period === 'Today' ? (
-        <div className="mb-4">
-          <DateStepper date={selectedDate} onChange={setSelectedDate} maxDate={todayStr()} />
-        </div>
-      ) : (
-        <p className="text-white/40 text-sm mb-4">{todayStr()}</p>
-      )}
 
-      <PeriodTabs period={period} onChange={setPeriod} />
+      {/* Pinned controls: date / period / business stay reachable while scrolling. */}
+      <div className="sticky top-0 z-20 -mx-6 mb-4 border-b border-white/[0.06] bg-bg/95 px-6 pt-3 pb-3 backdrop-blur-md md:-mx-8 md:px-8">
+        {period === 'Today' ? (
+          <DateStepper date={selectedDate} onChange={setSelectedDate} maxDate={todayStr()} />
+        ) : (
+          <p className="text-white/40 text-sm">{todayStr()}</p>
+        )}
+        <div className="mt-3 flex flex-col gap-2">
+          <PeriodTabs period={period} onChange={setPeriod} className="" />
+          {businessOptions.length > 1 && (
+            <PillGroup options={businessPillOptions} value={business} onChange={setBusiness} />
+          )}
+        </div>
+      </div>
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
-      <div
-        className={`transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}
-      >
+      <div className={`transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -161,6 +207,7 @@ export default function Dashboard() {
                   <span className="w-6 h-6 shrink-0 flex items-center justify-center rounded-full bg-violet-500/20 text-violet-300 text-xs font-semibold">
                     {i + 1}
                   </span>
+                  <Avatar src={emp.profile_image} name={emp.full_name} size="sm" />
                   <div className="min-w-0">
                     <p className="text-white text-sm font-medium truncate">{emp.full_name}</p>
                     <p className="text-white/40 text-xs truncate">{emp.department}</p>

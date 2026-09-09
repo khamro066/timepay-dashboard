@@ -7,8 +7,11 @@
   },
   "filters": {
     "searchPlaceholder": "Ism bo'yicha qidirish...",
+    "all": "Barchasi",
     "allDepartments": "Barcha bo'limlar",
     "department": "Bo'lim",
+    "position": "Lavozim",
+    "allPositions": "Barcha lavozimlar",
     "sortBy": "Saralash",
     "sortAttendanceDesc": "Davomat: yuqori → past",
     "sortAttendanceAsc": "Davomat: past → yuqori",
