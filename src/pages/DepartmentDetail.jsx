@@ -38,7 +38,10 @@ export default function DepartmentDetail() {
       try {
         const { date_from, date_to } = getDateRange(period)
         const res = await api.get('/api/ranking', { params: { date_from, date_to, department } })
-        if (!cancelled) setData(res.data)
+        if (!cancelled) {
+          // Order by the attendance % we display, not the API's default sort.
+          setData([...res.data].sort((a, b) => (b.attendance_rate ?? -1) - (a.attendance_rate ?? -1)))
+        }
       } catch {
         if (!cancelled) setError('departments.loadError')
       } finally {
@@ -91,7 +94,7 @@ export default function DepartmentDetail() {
             leading={<Avatar src={emp.profile_image} name={emp.full_name} size="md" />}
             title={emp.full_name}
             subtitle={emp.position}
-            trailing={<ScoreBadge score={emp.overall_score} />}
+            trailing={<ScoreBadge score={emp.attendance_rate} label={t('common.attendance')} />}
             onClick={() => navigate(`/employees/${emp.employee_id}`)}
           />
         ))}

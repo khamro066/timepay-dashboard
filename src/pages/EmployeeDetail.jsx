@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ArrowLeft, Award, CheckCircle2, Clock, Clock3, LogOut, PlusCircle, TimerReset, User } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Clock3, LogOut, PlusCircle, TimerReset, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -9,12 +9,11 @@ import EmployeeLeaveManager from '../components/EmployeeLeaveManager'
 import EmployeeStatusSelect from '../components/EmployeeStatusSelect'
 import LegendRow from '../components/LegendRow'
 import PeriodTabs from '../components/PeriodTabs'
-import ScoreExplainer from '../components/ScoreExplainer'
 import StatCard from '../components/StatCard'
 
-function fmtHoursUz(totalMinutes) {
-  const m = totalMinutes || 0
-  return `${Math.floor(m / 60)} soat ${m % 60} daq`
+function fmtHours(t, totalMinutes) {
+  const total = totalMinutes || 0
+  return t('common.hoursShort', { h: Math.floor(total / 60), m: total % 60 })
 }
 
 function getDateRange(period) {
@@ -27,7 +26,7 @@ function getDateRange(period) {
 }
 
 function fmtPct(value) {
-  return value === null || value === undefined ? '—' : Math.round(value * 100)
+  return value === null || value === undefined ? '—' : `${Math.round(value * 100)}%`
 }
 
 function dayStatus(day) {
@@ -136,14 +135,9 @@ export default function EmployeeDetail() {
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
       <div className={`transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-white/40 text-xs font-medium uppercase tracking-wide">{t('employeeDetail.statsTitle')}</span>
-          <ScoreExplainer />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <StatCard label={t('employeeDetail.overallScore')} value={fmtPct(data?.overall_score)} icon={Award} tone="purple" />
+        <p className="text-white/40 text-xs font-medium uppercase tracking-wide mb-3">{t('employeeDetail.statsTitle')}</p>
+        <div className="mb-6 sm:max-w-xs">
           <StatCard label={t('employeeDetail.attendanceRate')} value={fmtPct(data?.attendance_rate)} icon={CheckCircle2} tone="teal" />
-          <StatCard label={t('employeeDetail.punctualityRate')} value={fmtPct(data?.punctuality_rate)} icon={Clock} tone="amber" />
         </div>
 
         <div className="glass-card rounded-2xl p-4 mb-6 flex flex-wrap gap-x-8 gap-y-3">
@@ -154,9 +148,9 @@ export default function EmployeeDetail() {
 
         <div className="grid grid-cols-2 gap-4 mb-8">
           <StatCard label={t('reports.statAvgCheckIn')} value={data?.average_check_in_time ?? '—'} icon={Clock3} tone="teal" />
-          <StatCard label={t('reports.colAvgCheckOut')} value={data?.average_check_out_time ?? '—'} icon={LogOut} tone="amber" />
-          <StatCard label={t('reports.statTotalWorked')} value={fmtHoursUz(data?.total_worked_minutes)} icon={TimerReset} tone="purple" />
-          <StatCard label={t('reports.statOvertime')} value={fmtHoursUz(data?.total_extra_minutes)} icon={PlusCircle} tone="red" />
+          <StatCard label={t('reports.statAvgCheckOut')} value={data?.average_check_out_time ?? '—'} icon={LogOut} tone="amber" />
+          <StatCard label={t('reports.statTotalWorked')} value={fmtHours(t, data?.total_worked_minutes)} icon={TimerReset} tone="purple" />
+          <StatCard label={t('reports.statOvertime')} value={fmtHours(t, data?.total_extra_minutes)} icon={PlusCircle} tone="red" />
         </div>
 
         {data && <EmployeeCalendarHeatmap employeeId={data.employee_id} />}

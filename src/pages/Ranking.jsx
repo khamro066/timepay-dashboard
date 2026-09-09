@@ -8,7 +8,6 @@ import DisciplineTiers from '../components/DisciplineTiers'
 import FilterBar from '../components/FilterBar'
 import RankingChart from '../components/RankingChart'
 import ScoreBadge from '../components/ScoreBadge'
-import ScoreExplainer from '../components/ScoreExplainer'
 
 function getDateRange(period, customRange) {
   if (period === 'Custom') {
@@ -26,15 +25,13 @@ const COLUMN_KEYS = [
   { key: 'full_name', labelKey: 'ranking.colName' },
   { key: 'department', labelKey: 'ranking.colDepartment' },
   { key: 'attendance_rate', labelKey: 'ranking.colAttendance' },
-  { key: 'punctuality_rate', labelKey: 'ranking.colPunctuality' },
-  { key: 'overall_score', labelKey: 'ranking.colScore' },
   { key: 'late_days', labelKey: 'ranking.colLate' },
   { key: 'absent_days', labelKey: 'ranking.colAbsent' },
 ]
 
 const SORT_OPTIONS = [
-  { value: 'score_desc', labelKey: 'filters.sortScoreDesc' },
-  { value: 'score_asc', labelKey: 'filters.sortScoreAsc' },
+  { value: 'attendance_desc', labelKey: 'filters.sortAttendanceDesc' },
+  { value: 'attendance_asc', labelKey: 'filters.sortAttendanceAsc' },
   { value: 'name_asc', labelKey: 'filters.sortNameAsc' },
   { value: 'late_desc', labelKey: 'filters.sortLateDesc' },
 ]
@@ -42,20 +39,16 @@ const SORT_OPTIONS = [
 function sortRows(rows, sort) {
   const sorted = [...rows]
   switch (sort) {
-    case 'score_asc':
-      return sorted.sort((a, b) => (a.overall_score ?? -1) - (b.overall_score ?? -1))
+    case 'attendance_asc':
+      return sorted.sort((a, b) => (a.attendance_rate ?? -1) - (b.attendance_rate ?? -1))
     case 'name_asc':
       return sorted.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''))
     case 'late_desc':
       return sorted.sort((a, b) => b.late_days - a.late_days)
-    case 'score_desc':
+    case 'attendance_desc':
     default:
-      return sorted.sort((a, b) => (b.overall_score ?? -1) - (a.overall_score ?? -1))
+      return sorted.sort((a, b) => (b.attendance_rate ?? -1) - (a.attendance_rate ?? -1))
   }
-}
-
-function fmtPct(value) {
-  return value === null || value === undefined ? '—' : `${Math.round(value * 100)}%`
 }
 
 const STATUS_TAG = {
@@ -74,7 +67,7 @@ export default function Ranking() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [department, setDepartment] = useState(null)
-  const [sort, setSort] = useState('score_desc')
+  const [sort, setSort] = useState('attendance_desc')
   const [showArchived, setShowArchived] = useState(false)
 
   const { date_from, date_to } = getDateRange(period, customRange)
@@ -120,22 +113,22 @@ export default function Ranking() {
 
   const sorted = useMemo(() => sortRows(filtered, sort), [filtered, sort])
 
-  const topByScore = useMemo(() => {
-    return [...filtered].sort((a, b) => (b.overall_score ?? 0) - (a.overall_score ?? 0)).slice(0, 15)
+  const topByAttendance = useMemo(() => {
+    return [...filtered].sort((a, b) => (b.attendance_rate ?? 0) - (a.attendance_rate ?? 0)).slice(0, 15)
   }, [filtered])
 
   const disciplineTiers = useMemo(() => {
-    const scored = filtered.filter((r) => r.overall_score !== null && r.overall_score !== undefined)
+    const scored = filtered.filter((r) => r.attendance_rate !== null && r.attendance_rate !== undefined)
     const counts = {
-      perfect: scored.filter((r) => r.overall_score >= 1).length,
-      tier95: scored.filter((r) => r.overall_score >= 0.95 && r.overall_score < 1).length,
-      tier85: scored.filter((r) => r.overall_score >= 0.85 && r.overall_score < 0.95).length,
-      tier60: scored.filter((r) => r.overall_score >= 0.6 && r.overall_score < 0.85).length,
-      low: scored.filter((r) => r.overall_score < 0.6).length,
+      perfect: scored.filter((r) => r.attendance_rate >= 1).length,
+      tier95: scored.filter((r) => r.attendance_rate >= 0.95 && r.attendance_rate < 1).length,
+      tier85: scored.filter((r) => r.attendance_rate >= 0.85 && r.attendance_rate < 0.95).length,
+      tier60: scored.filter((r) => r.attendance_rate >= 0.6 && r.attendance_rate < 0.85).length,
+      low: scored.filter((r) => r.attendance_rate < 0.6).length,
     }
     const lowNames = scored
-      .filter((r) => r.overall_score < 0.6)
-      .sort((a, b) => (a.overall_score ?? 0) - (b.overall_score ?? 0))
+      .filter((r) => r.attendance_rate < 0.6)
+      .sort((a, b) => (a.attendance_rate ?? 0) - (b.attendance_rate ?? 0))
       .map((r) => r.full_name)
     return { total: scored.length, counts, lowNames }
   }, [filtered])
@@ -179,12 +172,9 @@ export default function Ranking() {
           transition={{ duration: 0.25 }}
           className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface p-5 shadow-lg shadow-black/20 mb-6"
         >
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-white font-semibold">{t('ranking.top15')}</h2>
-            <ScoreExplainer />
-          </div>
-          {topByScore.length > 0 && <RankingChart data={topByScore} />}
-          {topByScore.length === 0 && <p className="text-white/40 text-sm py-4">{t('ranking.noData')}</p>}
+          <h2 className="text-white font-semibold mb-4">{t('ranking.top15')}</h2>
+          {topByAttendance.length > 0 && <RankingChart data={topByAttendance} />}
+          {topByAttendance.length === 0 && <p className="text-white/40 text-sm py-4">{t('ranking.noData')}</p>}
         </motion.div>
 
         <motion.div
@@ -246,10 +236,8 @@ export default function Ranking() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-white/60 whitespace-nowrap">{row.department}</td>
-                    <td className="px-4 py-3 text-white/50 text-xs">{fmtPct(row.attendance_rate)}</td>
-                    <td className="px-4 py-3 text-white/50 text-xs">{fmtPct(row.punctuality_rate)}</td>
                     <td className="px-4 py-3">
-                      <ScoreBadge score={row.overall_score} size="lg" />
+                      <ScoreBadge score={row.attendance_rate} size="lg" />
                     </td>
                     <td className="px-4 py-3 text-white/60">{row.late_days}</td>
                     <td className="px-4 py-3 text-white/60">{row.absent_days}</td>
@@ -296,26 +284,11 @@ export default function Ranking() {
                   </div>
                   <p className="text-white/40 text-xs truncate">{row.department}</p>
                 </div>
-                <ScoreBadge score={row.overall_score} label={t('common.overallScore')} />
+                <ScoreBadge score={row.attendance_rate} label={t('common.attendance')} />
               </div>
-              <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-white/5 text-center">
-                <div>
-                  <p className="text-white text-sm font-semibold">{fmtPct(row.attendance_rate)}</p>
-                  <p className="text-white/40 text-[10px]">{t('ranking.colAttendance')}</p>
-                </div>
-                <div>
-                  <p className="text-white text-sm font-semibold">{fmtPct(row.punctuality_rate)}</p>
-                  <p className="text-white/40 text-[10px]">{t('ranking.colPunctuality')}</p>
-                </div>
-                <div>
-                  <p className="text-white text-sm font-semibold">{row.late_days}</p>
-                  <p className="text-white/40 text-[10px]">{t('ranking.colLate')}</p>
-                </div>
-                <div>
-                  <p className="text-white text-sm font-semibold">{row.absent_days}</p>
-                  <p className="text-white/40 text-[10px]">{t('ranking.colAbsent')}</p>
-                </div>
-              </div>
+              <p className="text-white/45 text-xs mt-2.5 pt-2.5 border-t border-white/5">
+                {t('ranking.cardSupport', { late: row.late_days, absent: row.absent_days })}
+              </p>
             </motion.div>
           ))}
           {sorted.length === 0 && (

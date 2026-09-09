@@ -29,6 +29,12 @@ const TOP_LABEL_KEY = {
   Month: 'dashboard.topMonth',
 }
 
+// Rank the "top 5" by the same attendance % the cards show, not the
+// server's default overall_score ordering.
+function topFiveByAttendance(rows) {
+  return [...rows].sort((a, b) => (b.attendance_rate ?? -1) - (a.attendance_rate ?? -1)).slice(0, 5)
+}
+
 export default function Dashboard() {
   const { t } = useTranslation()
   const api = useApi()
@@ -56,7 +62,7 @@ export default function Dashboard() {
           ])
           if (!cancelled) {
             setStats(statsRes.data)
-            setTopFive(rankRes.data.slice(0, 5))
+            setTopFive(topFiveByAttendance(rankRes.data))
           }
         } else {
           const rankRes = await api.get('/api/ranking', { params: { date_from, date_to } })
@@ -68,7 +74,7 @@ export default function Dashboard() {
               late: rows.reduce((sum, r) => sum + r.late_days, 0),
               absent: rows.reduce((sum, r) => sum + r.absent_days, 0),
             })
-            setTopFive(rows.slice(0, 5))
+            setTopFive(topFiveByAttendance(rows))
           }
         }
       } catch {
@@ -160,7 +166,7 @@ export default function Dashboard() {
                     <p className="text-white/40 text-xs truncate">{emp.department}</p>
                   </div>
                 </div>
-                <ScoreBadge score={emp.overall_score} />
+                <ScoreBadge score={emp.attendance_rate} label={t('common.attendance')} />
               </motion.div>
             ))}
             {!loading && topFive.length === 0 && (

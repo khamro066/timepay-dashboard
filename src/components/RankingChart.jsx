@@ -17,7 +17,7 @@ export default function RankingChart({ data }) {
   const { t } = useTranslation()
   const chartData = data.map((row) => ({
     name: row.full_name,
-    score: row.overall_score !== null && row.overall_score !== undefined ? Math.round(row.overall_score * 100) : 0,
+    score: row.attendance_rate !== null && row.attendance_rate !== undefined ? Math.round(row.attendance_rate * 100) : 0,
   }))
 
   return (
@@ -48,7 +48,7 @@ export default function RankingChart({ data }) {
             tick={{ fill: 'rgba(255,255,255,0.75)', fontSize: 12 }}
           />
           <Tooltip
-            formatter={(value) => [`${value}%`, t('ranking.colScore')]}
+            formatter={(value) => [`${value}%`, t('ranking.colAttendance')]}
             contentStyle={{
               background: '#211d33',
               border: '1px solid rgba(255,255,255,0.1)',

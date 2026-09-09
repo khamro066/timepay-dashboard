@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, Clock3, PlusCircle, ChevronDown, Download, Loader2, TimerReset } from 'lucide-react'
+import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, ChevronDown, Download, Loader2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApi } from '../api/useApi'
@@ -10,7 +10,6 @@ import FilterBar from '../components/FilterBar'
 import LatenessBars from '../components/LatenessBars'
 import NoteCell from '../components/NoteCell'
 import ScoreBadge from '../components/ScoreBadge'
-import StatCard from '../components/StatCard'
 
 function getDateRange(period, customRange) {
   if (period === 'Custom') {
@@ -75,23 +74,6 @@ const STATUS_TAG = {
 function fmtVal(row, key) {
   const value = row[key]
   return value === null || value === undefined || value === '' ? '—' : value
-}
-
-function fmtHoursUz(totalMinutes) {
-  return `${Math.floor(totalMinutes / 60)} soat ${totalMinutes % 60} daq`
-}
-
-function avgTimeStr(times) {
-  const minutes = times
-    .filter(Boolean)
-    .map((t) => {
-      const [h, m] = t.split(':').map(Number)
-      return h * 60 + m
-    })
-    .filter((m) => !Number.isNaN(m))
-  if (!minutes.length) return null
-  const avg = Math.round(minutes.reduce((a, b) => a + b, 0) / minutes.length)
-  return `${String(Math.floor(avg / 60)).padStart(2, '0')}:${String(avg % 60).padStart(2, '0')}`
 }
 
 export default function Reports() {
@@ -198,16 +180,10 @@ export default function Reports() {
     })
   }, [data, search, department])
 
-  const kpis = useMemo(() => {
-    const avgCheckIn = avgTimeStr(filtered.map((r) => r.average_check_in_time))
-    const totalLateMinutes = filtered.reduce((sum, r) => sum + (r.total_late_minutes || 0), 0)
-    const lateIncidents = filtered.reduce((sum, r) => sum + (r.late_days || 0), 0)
-    const totalWorkedMinutes = filtered.reduce((sum, r) => sum + (r.total_worked_minutes || 0), 0)
-    const totalExtraMinutes = filtered.reduce((sum, r) => sum + (r.total_extra_minutes || 0), 0)
-    return { avgCheckIn, totalLateMinutes, lateIncidents, totalWorkedMinutes, totalExtraMinutes }
-  }, [filtered])
-
-  const lowScorers = useMemo(() => filtered.filter((r) => r.overall_score !== null && r.overall_score < 0.6), [filtered])
+  const lowScorers = useMemo(
+    () => filtered.filter((r) => r.attendance_rate !== null && r.attendance_rate < 0.6),
+    [filtered],
+  )
 
   const byDepartment = useMemo(() => {
     const groups = {}
@@ -218,7 +194,9 @@ export default function Reports() {
     }
     for (const dept of Object.keys(groups)) {
       groups[dept].sort((a, b) =>
-        sortDir === 'worst' ? (a.overall_score ?? -1) - (b.overall_score ?? -1) : (b.overall_score ?? -1) - (a.overall_score ?? -1),
+        sortDir === 'worst'
+          ? (a.attendance_rate ?? -1) - (b.attendance_rate ?? -1)
+          : (b.attendance_rate ?? -1) - (a.attendance_rate ?? -1),
       )
     }
     return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]))
@@ -289,19 +267,6 @@ export default function Reports() {
         resultShown={filtered.length}
         resultTotal={data.length}
       />
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label={t('reports.statAvgCheckIn')} value={kpis.avgCheckIn ?? '—'} icon={Clock3} tone="teal" />
-        <StatCard
-          label={t('reports.statTotalLate')}
-          value={fmtHoursUz(kpis.totalLateMinutes)}
-          hint={t('reports.lateIncidentsHint', { count: kpis.lateIncidents })}
-          icon={AlertTriangle}
-          tone="amber"
-        />
-        <StatCard label={t('reports.statTotalWorked')} value={fmtHoursUz(kpis.totalWorkedMinutes)} icon={TimerReset} tone="purple" />
-        <StatCard label={t('reports.statOvertime')} value={fmtHoursUz(kpis.totalExtraMinutes)} icon={PlusCircle} tone="red" />
-      </div>
 
       {lowScorers.length > 0 && (
         <AlertCard
@@ -403,7 +368,7 @@ export default function Reports() {
                         return (
                           <div
                             key={row.employee_id}
-                            className={`rounded-xl bg-white/[0.03] border border-white/5 border-l-4 ${scoreBorderTone(row.overall_score)} p-3.5`}
+                            className={`rounded-xl bg-white/[0.03] border border-white/5 border-l-4 ${scoreBorderTone(row.attendance_rate)} p-3.5`}
                           >
                             <div className="flex items-center gap-3">
                               <Avatar src={row.profile_image} name={row.full_name} size="sm" />
@@ -426,7 +391,7 @@ export default function Reports() {
                                   })}
                                 </p>
                               </div>
-                              <ScoreBadge score={row.overall_score} label={t('common.overallScore')} size="lg" />
+                              <ScoreBadge score={row.attendance_rate} label={t('common.attendance')} size="lg" />
                             </div>
 
                             <button

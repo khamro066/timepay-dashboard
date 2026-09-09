@@ -15,21 +15,21 @@ function last30Days() {
 }
 
 const SORT_OPTIONS = [
-  { value: 'score_desc', labelKey: 'filters.sortScoreDesc' },
-  { value: 'score_asc', labelKey: 'filters.sortScoreAsc' },
+  { value: 'attendance_desc', labelKey: 'filters.sortAttendanceDesc' },
+  { value: 'attendance_asc', labelKey: 'filters.sortAttendanceAsc' },
   { value: 'name_asc', labelKey: 'filters.sortNameAsc' },
 ]
 
 function sortRows(rows, sort) {
   const sorted = [...rows]
   switch (sort) {
-    case 'score_asc':
-      return sorted.sort((a, b) => (a.overall_score ?? -1) - (b.overall_score ?? -1))
+    case 'attendance_asc':
+      return sorted.sort((a, b) => (a.attendance_rate ?? -1) - (b.attendance_rate ?? -1))
     case 'name_asc':
       return sorted.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''))
-    case 'score_desc':
+    case 'attendance_desc':
     default:
-      return sorted.sort((a, b) => (b.overall_score ?? -1) - (a.overall_score ?? -1))
+      return sorted.sort((a, b) => (b.attendance_rate ?? -1) - (a.attendance_rate ?? -1))
   }
 }
 
@@ -45,7 +45,7 @@ export default function Employees() {
   const [data, setData] = useState([])
   const [search, setSearch] = useState('')
   const [department, setDepartment] = useState(null)
-  const [sort, setSort] = useState('score_desc')
+  const [sort, setSort] = useState('attendance_desc')
   const [showArchived, setShowArchived] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -145,7 +145,7 @@ export default function Employees() {
                   </p>
                 </div>
               </div>
-              <ScoreBadge score={emp.overall_score} label={t('common.overallScore')} />
+              <ScoreBadge score={emp.attendance_rate} label={t('common.attendance')} />
             </div>
             <div className="flex gap-4 mt-3 text-xs text-white/50">
               <span>

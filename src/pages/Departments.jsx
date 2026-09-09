@@ -81,9 +81,8 @@ export default function Departments() {
             key={dept.department}
             department={dept.department}
             employeeCount={dept.employee_count}
-            avgCheckIn={dept.average_check_in_time}
-            scoreRatio={dept.average_overall_score}
-            lateMinutes={dept.total_late_minutes}
+            attendanceRatio={dept.average_attendance_rate}
+            lateIncidents={dept.total_late_incidents}
             absentDays={dept.total_absent_incidents}
             onClick={() => navigate(`/departments/${encodeURIComponent(dept.department)}`)}
           />

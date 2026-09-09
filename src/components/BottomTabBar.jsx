@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Building2, CalendarRange, LayoutDashboard, LogOut, MoreHorizontal, Trophy, Users, FileSpreadsheet } from 'lucide-react'
+import { Building2, CalendarRange, FileSpreadsheet, LayoutDashboard, LogOut, MoreHorizontal, Trophy, Users } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, useLocation } from 'react-router-dom'
@@ -7,10 +7,16 @@ import { useAuth } from '../context/AuthContext'
 import LanguageSwitcher from './LanguageSwitcher'
 
 const PRIMARY_TABS = [
-  { to: '/', key: 'nav.dashboard', icon: LayoutDashboard, end: true },
-  { to: '/ranking', key: 'nav.ranking', icon: Trophy, end: false },
-  { to: '/reports', key: 'nav.reports', icon: FileSpreadsheet, end: false },
-  { to: '/departments', key: 'nav.departments', icon: Building2, end: false },
+  { to: '/', labelKey: 'nav.dashboardShort', icon: LayoutDashboard, end: true },
+  { to: '/employees', labelKey: 'nav.employees', icon: Users, end: false },
+  { to: '/jadval', labelKey: 'nav.schedule', icon: CalendarRange, end: false },
+  { to: '/departments', labelKey: 'nav.departments', icon: Building2, end: false },
+]
+
+// Everything not on the bottom bar lives in the "More" sheet.
+const MORE_LINKS = [
+  { to: '/ranking', labelKey: 'nav.ranking', icon: Trophy },
+  { to: '/reports', labelKey: 'nav.reports', icon: FileSpreadsheet },
 ]
 
 export default function BottomTabBar() {
@@ -18,7 +24,7 @@ export default function BottomTabBar() {
   const { logout } = useAuth()
   const location = useLocation()
   const [moreOpen, setMoreOpen] = useState(false)
-  const isMoreActive = ['/employees', '/jadval'].some((p) => location.pathname.startsWith(p))
+  const isMoreActive = MORE_LINKS.some((l) => location.pathname.startsWith(l.to))
 
   return (
     <>
@@ -41,34 +47,23 @@ export default function BottomTabBar() {
               transition={{ type: 'spring', bounce: 0.15, duration: 0.35 }}
               className="md:hidden fixed z-50 left-3 right-3 bottom-[calc(78px+env(safe-area-inset-bottom))] rounded-2xl border border-white/10 bg-surface-light/95 backdrop-blur-xl shadow-2xl shadow-black/50 p-2"
             >
-              <NavLink to="/employees" onClick={() => setMoreOpen(false)}>
-                {({ isActive }) => (
-                  <div
-                    className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
-                      isActive ? 'text-white bg-violet-600/20' : 'text-white/70 hover:bg-white/5'
-                    }`}
-                  >
-                    <Users className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t('nav.employees')}</span>
-                  </div>
-                )}
-              </NavLink>
-
-              <NavLink to="/jadval" onClick={() => setMoreOpen(false)}>
-                {({ isActive }) => (
-                  <div
-                    className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
-                      isActive ? 'text-white bg-violet-600/20' : 'text-white/70 hover:bg-white/5'
-                    }`}
-                  >
-                    <CalendarRange className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t('nav.schedule')}</span>
-                  </div>
-                )}
-              </NavLink>
+              {MORE_LINKS.map((link) => (
+                <NavLink key={link.to} to={link.to} onClick={() => setMoreOpen(false)}>
+                  {({ isActive }) => (
+                    <div
+                      className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
+                        isActive ? 'text-white bg-violet-600/20' : 'text-white/70 hover:bg-white/5'
+                      }`}
+                    >
+                      <link.icon className="w-4 h-4" />
+                      <span className="text-sm font-medium">{t(link.labelKey)}</span>
+                    </div>
+                  )}
+                </NavLink>
+              ))}
 
               <div className="flex items-center justify-between px-3 py-3">
-                <span className="text-white/70 text-sm font-medium">{t('nav.brandSubtitle')}</span>
+                <span className="text-white/70 text-sm font-medium">{t('common.language')}</span>
                 <LanguageSwitcher />
               </div>
 
@@ -103,7 +98,7 @@ export default function BottomTabBar() {
                   )}
                   <tab.icon className={`w-5 h-5 relative z-10 ${isActive ? 'text-teal-300' : 'text-white/40'}`} />
                   <span className={`relative z-10 text-[10px] font-medium ${isActive ? 'text-teal-300' : 'text-white/40'}`}>
-                    {t(tab.key)}
+                    {t(tab.labelKey)}
                   </span>
                 </div>
               )}
