@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Building2, LayoutDashboard, LogOut, MoreHorizontal, Trophy, Users, FileSpreadsheet } from 'lucide-react'
+import { Building2, CalendarRange, LayoutDashboard, LogOut, MoreHorizontal, Trophy, Users, FileSpreadsheet } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, useLocation } from 'react-router-dom'
@@ -18,7 +18,7 @@ export default function BottomTabBar() {
   const { logout } = useAuth()
   const location = useLocation()
   const [moreOpen, setMoreOpen] = useState(false)
-  const isMoreActive = location.pathname.startsWith('/employees')
+  const isMoreActive = ['/employees', '/jadval'].some((p) => location.pathname.startsWith(p))
 
   return (
     <>
@@ -50,6 +50,19 @@ export default function BottomTabBar() {
                   >
                     <Users className="w-4 h-4" />
                     <span className="text-sm font-medium">{t('nav.employees')}</span>
+                  </div>
+                )}
+              </NavLink>
+
+              <NavLink to="/jadval" onClick={() => setMoreOpen(false)}>
+                {({ isActive }) => (
+                  <div
+                    className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
+                      isActive ? 'text-white bg-violet-600/20' : 'text-white/70 hover:bg-white/5'
+                    }`}
+                  >
+                    <CalendarRange className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t('nav.schedule')}</span>
                   </div>
                 )}
               </NavLink>

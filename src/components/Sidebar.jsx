@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Building2, FileSpreadsheet, LayoutDashboard, LogOut, Trophy, Users } from 'lucide-react'
+import { Building2, CalendarRange, FileSpreadsheet, LayoutDashboard, LogOut, Trophy, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -11,6 +11,7 @@ const navItems = [
   { to: '/employees', key: 'nav.employees', icon: Users, end: false },
   { to: '/departments', key: 'nav.departments', icon: Building2, end: false },
   { to: '/reports', key: 'nav.reports', icon: FileSpreadsheet, end: false },
+  { to: '/jadval', key: 'nav.schedule', icon: CalendarRange, end: false },
 ]
 
 // Desktop-only static sidebar. Mobile navigation lives in BottomTabBar.

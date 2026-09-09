@@ -36,6 +36,7 @@
     "employees": "Xodimlar",
     "departments": "Bo'limlar",
     "reports": "Hisobotlar",
+    "schedule": "Jadval",
     "more": "Ko'proq",
     "logout": "Chiqish"
   },
@@ -200,5 +201,22 @@
     "noteSaveError": "Saqlanmadi",
     "noData": "Bu davr uchun ma'lumot yo'q.",
     "loadError": "Hisobot ma'lumotlarini yuklab bo'lmadi."
+  },
+  "schedule": {
+    "tagline": "Butun kompaniya davomati — kun bo'yicha",
+    "subtitle": "{{employees}} xodim · {{days}} kun",
+    "colEmployee": "Xodim",
+    "statusOnTime": "Vaqtida",
+    "statusLate": "Kechikdi",
+    "statusAbsent": "Kelmadi",
+    "statusExcused": "Sababli",
+    "statusHoliday": "Bayram",
+    "statusDayOff": "Dam olish",
+    "statusNoData": "Ma'lumot yo'q",
+    "legendNeutral": "Dam olish · ma'lumot yo'q",
+    "pickRange": "Ko'rish uchun sanalar oralig'ini tanlang.",
+    "rangeTooWide": "Juda katta oraliq. \"Davr\" ni qisqaroq tanlang (eng ko'pi {{max}} kun).",
+    "noData": "Bu davr uchun ma'lumot yo'q.",
+    "loadError": "Jadval ma'lumotlarini yuklab bo'lmadi."
   }
 }

@@ -10,6 +10,7 @@ import Employees from './pages/Employees'
 import Login from './pages/Login'
 import Ranking from './pages/Ranking'
 import Reports from './pages/Reports'
+import Schedule from './pages/Schedule'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth()
@@ -36,6 +37,7 @@ function AppRoutes() {
         <Route path="/departments" element={<Departments />} />
         <Route path="/departments/:name" element={<DepartmentDetail />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/jadval" element={<Schedule />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

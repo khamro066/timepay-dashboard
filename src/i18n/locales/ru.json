@@ -36,6 +36,7 @@
     "employees": "Сотрудники",
     "departments": "Отделы",
     "reports": "Отчёты",
+    "schedule": "Табель",
     "more": "Ещё",
     "logout": "Выйти"
   },
@@ -200,5 +201,22 @@
     "noteSaveError": "Не сохранено",
     "noData": "Нет данных за этот период.",
     "loadError": "Не удалось загрузить данные отчёта."
+  },
+  "schedule": {
+    "tagline": "Посещаемость всей компании — по дням",
+    "subtitle": "{{employees}} сотр. · {{days}} дн.",
+    "colEmployee": "Сотрудник",
+    "statusOnTime": "Вовремя",
+    "statusLate": "Опоздал",
+    "statusAbsent": "Отсутствовал",
+    "statusExcused": "По причине",
+    "statusHoliday": "Праздник",
+    "statusDayOff": "Выходной",
+    "statusNoData": "Нет данных",
+    "legendNeutral": "Выходной · нет данных",
+    "pickRange": "Выберите диапазон дат для просмотра.",
+    "rangeTooWide": "Слишком большой диапазон. Выберите период короче (максимум {{max}} дн.).",
+    "noData": "Нет данных за этот период.",
+    "loadError": "Не удалось загрузить данные табеля."
   }
 }
