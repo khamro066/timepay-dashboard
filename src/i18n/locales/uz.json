@@ -62,6 +62,8 @@
     "topToday": "Bugungi TOP 5",
     "topWeek": "Shu haftadagi TOP 5",
     "topMonth": "Shu oydagi TOP 5",
+    "topLatest": "So'nggi kun TOP 5",
+    "latestData": "Bugungi ma'lumot hali yo'q · eng so'nggi: {{date}}",
     "noData": "Bu davr uchun ma'lumot yo'q.",
     "loadError": "Boshqaruv paneli ma'lumotlarini yuklab bo'lmadi."
   },

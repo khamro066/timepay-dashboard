@@ -45,13 +45,21 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(todayStr())
   const [business, setBusiness] = useState(null)
   const [businessOptions, setBusinessOptions] = useState([])
+  const [latestDate, setLatestDate] = useState(null)
   const [rankRows, setRankRows] = useState([])
   const [todayStats, setTodayStats] = useState(null)
   const [rankLoading, setRankLoading] = useState(true)
   const [statsLoading, setStatsLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const { date_from, date_to } = getDateRange(period, selectedDate)
+  // On the "Bugun" tab, if the current day has no data yet (sync hasn't run),
+  // fall back to the most recent day that does. Only the actual current date
+  // falls back — stepping the date picker back shows exactly that day.
+  const isCurrentDay = selectedDate === todayStr()
+  const isFallback = period === 'Today' && isCurrentDay && latestDate !== null && latestDate < selectedDate
+  const effectiveDate = isFallback ? latestDate : selectedDate
+
+  const { date_from, date_to } = getDateRange(period, effectiveDate)
 
   // The business list comes from its own recent-window lookup, not the current
   // period's ranking — otherwise the filter would vanish on any day the sync
@@ -65,6 +73,19 @@ export default function Dashboard() {
         if (cancelled) return
         const names = [...new Set(res.data.map((d) => d.department).filter(Boolean))].sort((a, b) => a.localeCompare(b))
         setBusinessOptions(names)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [api])
+
+  useEffect(() => {
+    let cancelled = false
+    api
+      .get('/api/company/latest-data-date')
+      .then((res) => {
+        if (!cancelled) setLatestDate(res.data.date)
       })
       .catch(() => {})
     return () => {
@@ -102,7 +123,7 @@ export default function Dashboard() {
     }
     let cancelled = false
     setStatsLoading(true)
-    const params = { date: selectedDate }
+    const params = { date: effectiveDate }
     if (business) params.department = business
     api
       .get('/api/company/daily-stats', { params })
@@ -118,7 +139,7 @@ export default function Dashboard() {
     return () => {
       cancelled = true
     }
-  }, [api, period, selectedDate, business])
+  }, [api, period, effectiveDate, business])
 
   const businessRows = useMemo(
     () => (business ? rankRows.filter((r) => r.department === business) : rankRows),
@@ -164,6 +185,9 @@ export default function Dashboard() {
         ) : (
           <p className="text-white/40 text-sm">{todayStr()}</p>
         )}
+        {isFallback && (
+          <p className="text-amber-300/80 text-xs mt-1.5">{t('dashboard.latestData', { date: effectiveDate })}</p>
+        )}
         <div className="mt-3 flex flex-col gap-2">
           <PeriodTabs period={period} onChange={setPeriod} className="" />
           {businessOptions.length > 1 && (
@@ -201,7 +225,9 @@ export default function Dashboard() {
           transition={{ delay: 0.15, duration: 0.25 }}
           className="glass-card rounded-3xl p-5"
         >
-          <h2 className="text-white font-semibold mb-4">{t(TOP_LABEL_KEY[period])}</h2>
+          <h2 className="text-white font-semibold mb-4">
+            {t(isFallback ? 'dashboard.topLatest' : TOP_LABEL_KEY[period])}
+          </h2>
           <div className="flex flex-col gap-1">
             {topFive.map((emp, i) => (
               <motion.div
