@@ -83,8 +83,19 @@ export default function Employees() {
         ])
         if (cancelled) return
         setData(wideRes.data)
+        // Split present_days into on-time vs late so the card shows three
+        // counts that add up to the working days elapsed this month.
         setMonthCounts(
-          new Map(mtdRes.data.map((r) => [r.employee_id, { late_days: r.late_days, absent_days: r.absent_days }])),
+          new Map(
+            mtdRes.data.map((r) => [
+              r.employee_id,
+              {
+                present: Math.max(0, r.present_days - r.late_days),
+                late: r.late_days,
+                absent: r.absent_days,
+              },
+            ]),
+          ),
         )
       } catch {
         if (!cancelled) setError('employees.loadError')
@@ -203,11 +214,16 @@ export default function Employees() {
                 periodLabel={t('attendanceBreakdown.last30')}
               />
             </div>
-            <div className="mt-3 text-xs text-white/50">
-              {t('employees.thisMonth', {
-                late: monthCounts.get(emp.employee_id)?.late_days ?? 0,
-                absent: monthCounts.get(emp.employee_id)?.absent_days ?? 0,
-              })}
+            <div className="mt-3 flex flex-wrap gap-x-2.5 gap-y-0.5 text-xs text-white/50">
+              <span className="whitespace-nowrap">
+                {t('employees.mtdPresent')}: {monthCounts.get(emp.employee_id)?.present ?? 0}
+              </span>
+              <span className="whitespace-nowrap">
+                {t('employees.mtdLate')}: {monthCounts.get(emp.employee_id)?.late ?? 0}
+              </span>
+              <span className="whitespace-nowrap">
+                {t('employees.mtdAbsent')}: {monthCounts.get(emp.employee_id)?.absent ?? 0}
+              </span>
             </div>
           </motion.div>
         ))}

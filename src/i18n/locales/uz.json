@@ -117,7 +117,9 @@
     "searchPlaceholder": "Ism yoki bo'lim bo'yicha qidirish...",
     "late": "Kech qolgan",
     "absent": "Yo'q bo'lgan",
-    "thisMonth": "Bu oy: {{late}} marta kech · {{absent}} kun yo'q",
+    "mtdPresent": "Ishga keldi",
+    "mtdLate": "Kech keldi",
+    "mtdAbsent": "Kelmadi",
     "notFound": "Xodim topilmadi.",
     "loadError": "Xodimlarni yuklab bo'lmadi."
   },
