@@ -44,6 +44,7 @@ export default function Dashboard() {
   const [period, setPeriod] = useState('Today')
   const [selectedDate, setSelectedDate] = useState(todayStr())
   const [business, setBusiness] = useState(null)
+  const [businessOptions, setBusinessOptions] = useState([])
   const [rankRows, setRankRows] = useState([])
   const [todayStats, setTodayStats] = useState(null)
   const [rankLoading, setRankLoading] = useState(true)
@@ -51,6 +52,25 @@ export default function Dashboard() {
   const [error, setError] = useState('')
 
   const { date_from, date_to } = getDateRange(period, selectedDate)
+
+  // The business list comes from its own recent-window lookup, not the current
+  // period's ranking — otherwise the filter would vanish on any day the sync
+  // hasn't run yet (single-day "Today" ranking would be empty).
+  useEffect(() => {
+    let cancelled = false
+    const { date_from: from, date_to: to } = getDateRange('Month')
+    api
+      .get('/api/departments/summary', { params: { date_from: from, date_to: to } })
+      .then((res) => {
+        if (cancelled) return
+        const names = [...new Set(res.data.map((d) => d.department).filter(Boolean))].sort((a, b) => a.localeCompare(b))
+        setBusinessOptions(names)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [api])
 
   // Ranking rows for the current period — always fetched for every business, so
   // the business filter list stays stable and Top-5 can filter client-side.
@@ -99,15 +119,6 @@ export default function Dashboard() {
       cancelled = true
     }
   }, [api, period, selectedDate, business])
-
-  const businessOptions = useMemo(
-    () => [...new Set(rankRows.map((r) => r.department).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
-    [rankRows],
-  )
-
-  useEffect(() => {
-    if (business && businessOptions.length > 0 && !businessOptions.includes(business)) setBusiness(null)
-  }, [business, businessOptions])
 
   const businessRows = useMemo(
     () => (business ? rankRows.filter((r) => r.department === business) : rankRows),
