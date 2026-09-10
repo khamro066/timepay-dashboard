@@ -6,6 +6,8 @@ import { useApi } from '../api/useApi'
 import AttendanceBadge from '../components/AttendanceBadge'
 import Avatar from '../components/Avatar'
 import FilterBar from '../components/FilterBar'
+import { boolParam, enumParam, strParam, useFilterParams } from '../hooks/useFilterParams'
+import { useScrollRestoration } from '../hooks/useScrollRestoration'
 
 // Local calendar date — toISOString() is UTC and shifts a day for anyone
 // east of Greenwich in the early hours.
@@ -51,20 +53,27 @@ const STATUS_TAG = {
   archived: { labelKey: 'employeeDetail.statusOptionArchived', className: 'text-red-300 bg-red-500/15' },
 }
 
+// Filter state lives in the URL query string so back/forward and reload
+// restore it — see useFilterParams.
+const FILTER_SPEC = {
+  q: { default: '' },
+  dept: strParam,
+  pos: strParam,
+  sort: enumParam('attendance_desc'),
+  archived: boolParam,
+}
+
 export default function Employees() {
   const { t } = useTranslation()
   const api = useApi()
   const navigate = useNavigate()
+  const [f, setF] = useFilterParams(FILTER_SPEC)
+  const { q: search, dept: department, pos: position, sort, archived: showArchived } = f
   const [data, setData] = useState([])
   // employee_id -> { late_days, absent_days } for the current month so far.
   // Kept separate from `data` (which is the 30-day window powering the
   // attendance %) so the two windows can be labelled independently.
   const [monthCounts, setMonthCounts] = useState(new Map())
-  const [search, setSearch] = useState('')
-  const [department, setDepartment] = useState(null)
-  const [position, setPosition] = useState(null)
-  const [sort, setSort] = useState('attendance_desc')
-  const [showArchived, setShowArchived] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -131,8 +140,8 @@ export default function Employees() {
   // Clear the position filter when it no longer applies — either a data
   // reload (archived toggle) or a department change that cascades it away.
   useEffect(() => {
-    if (position && !positionOptions.includes(position)) setPosition(null)
-  }, [position, positionOptions])
+    if (position && !positionOptions.includes(position)) setF('pos', null)
+  }, [position, positionOptions, setF])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -144,6 +153,8 @@ export default function Employees() {
     })
     return sortRows(rows, sort)
   }, [data, search, department, position, sort])
+
+  useScrollRestoration(!loading && data.length > 0)
 
   return (
     <div>
@@ -160,18 +171,18 @@ export default function Employees() {
 
       <FilterBar
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={(v) => setF('q', v)}
         department={department}
-        onDepartmentChange={setDepartment}
+        onDepartmentChange={(v) => setF('dept', v)}
         departmentOptions={departmentOptions}
         position={position}
-        onPositionChange={setPosition}
+        onPositionChange={(v) => setF('pos', v)}
         positionOptions={positionOptions}
         sort={sort}
-        onSortChange={setSort}
+        onSortChange={(v) => setF('sort', v)}
         sortOptions={SORT_OPTIONS}
         showArchived={showArchived}
-        onShowArchivedChange={setShowArchived}
+        onShowArchivedChange={(v) => setF('archived', v)}
         resultShown={filtered.length}
         resultTotal={data.length}
       />

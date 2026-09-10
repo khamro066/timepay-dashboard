@@ -59,7 +59,7 @@ export default function DepartmentDetail() {
     <div>
       <motion.button
         type="button"
-        onClick={() => navigate('/departments')}
+        onClick={() => navigate(-1)}
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.96 }}
         transition={{ duration: 0.15 }}

@@ -11,6 +11,8 @@ import DisciplineTiers from '../components/DisciplineTiers'
 import FilterBar from '../components/FilterBar'
 import RankingChart from '../components/RankingChart'
 import ScoreBadge from '../components/ScoreBadge'
+import { boolParam, enumParam, strParam, useFilterParams } from '../hooks/useFilterParams'
+import { useScrollRestoration } from '../hooks/useScrollRestoration'
 
 function getDateRange(period, customRange) {
   if (period === 'Custom') {
@@ -59,19 +61,28 @@ const STATUS_TAG = {
   archived: { labelKey: 'employeeDetail.statusOptionArchived', className: 'text-red-300 bg-red-500/15' },
 }
 
+// Filter state is kept in the URL query string so back/forward and reload
+// restore it — see useFilterParams.
+const FILTER_SPEC = {
+  q: { default: '' },
+  dept: strParam,
+  sort: enumParam('attendance_desc'),
+  archived: boolParam,
+  period: enumParam('Month'),
+  df: { default: '' },
+  dt: { default: '' },
+}
+
 export default function Ranking() {
   const { t } = useTranslation()
   const api = useApi()
   const navigate = useNavigate()
-  const [period, setPeriod] = useState('Month')
-  const [customRange, setCustomRange] = useState({ date_from: '', date_to: '' })
+  const [f, setF] = useFilterParams(FILTER_SPEC)
+  const { q: search, dept: department, sort, archived: showArchived, period } = f
+  const customRange = useMemo(() => ({ date_from: f.df, date_to: f.dt }), [f.df, f.dt])
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [search, setSearch] = useState('')
-  const [department, setDepartment] = useState(null)
-  const [sort, setSort] = useState('attendance_desc')
-  const [showArchived, setShowArchived] = useState(false)
   // Row whose attendance-% breakdown is expanded (desktop table only).
   const [expandedId, setExpandedId] = useState(null)
 
@@ -118,6 +129,8 @@ export default function Ranking() {
 
   const sorted = useMemo(() => sortRows(filtered, sort), [filtered, sort])
 
+  useScrollRestoration(!loading && data.length > 0)
+
   const topByAttendance = useMemo(() => {
     return [...filtered].sort((a, b) => (b.attendance_rate ?? 0) - (a.attendance_rate ?? 0)).slice(0, 15)
   }, [filtered])
@@ -151,19 +164,19 @@ export default function Ranking() {
 
       <FilterBar
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={(v) => setF('q', v)}
         department={department}
-        onDepartmentChange={setDepartment}
+        onDepartmentChange={(v) => setF('dept', v)}
         departmentOptions={departmentOptions}
         period={period}
-        onPeriodChange={setPeriod}
+        onPeriodChange={(v) => setF('period', v)}
         customRange={customRange}
-        onCustomRangeChange={setCustomRange}
+        onCustomRangeChange={(r) => setF({ df: r.date_from, dt: r.date_to })}
         sort={sort}
-        onSortChange={setSort}
+        onSortChange={(v) => setF('sort', v)}
         sortOptions={SORT_OPTIONS}
         showArchived={showArchived}
-        onShowArchivedChange={setShowArchived}
+        onShowArchivedChange={(v) => setF('archived', v)}
         resultShown={sorted.length}
         resultTotal={data.length}
       />

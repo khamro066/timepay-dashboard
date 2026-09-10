@@ -10,6 +10,8 @@ import DayOfWeekChart from '../components/DayOfWeekChart'
 import FilterBar from '../components/FilterBar'
 import LatenessBars from '../components/LatenessBars'
 import NoteCell from '../components/NoteCell'
+import { boolParam, enumParam, strParam, useFilterParams } from '../hooks/useFilterParams'
+import { useScrollRestoration } from '../hooks/useScrollRestoration'
 
 function getDateRange(period, customRange) {
   if (period === 'Custom') {
@@ -76,23 +78,32 @@ function fmtVal(row, key) {
   return value === null || value === undefined || value === '' ? '—' : value
 }
 
+// Filter state is kept in the URL query string so back/forward and reload
+// restore it — see useFilterParams.
+const FILTER_SPEC = {
+  q: { default: '' },
+  dept: strParam,
+  archived: boolParam,
+  period: enumParam('Month'),
+  df: { default: '' },
+  dt: { default: '' },
+  dir: enumParam('worst'),
+}
+
 export default function Reports() {
   const { t } = useTranslation()
   const api = useApi()
-  const [period, setPeriod] = useState('Month')
-  const [customRange, setCustomRange] = useState({ date_from: '', date_to: '' })
+  const [f, setF] = useFilterParams(FILTER_SPEC)
+  const { q: search, dept: department, archived: showArchived, period, dir: sortDir } = f
+  const customRange = useMemo(() => ({ date_from: f.df, date_to: f.dt }), [f.df, f.dt])
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [exporting, setExporting] = useState(false)
   const [collapsed, setCollapsed] = useState({})
   const [expandedCards, setExpandedCards] = useState({})
-  const [search, setSearch] = useState('')
-  const [department, setDepartment] = useState(null)
-  const [sortDir, setSortDir] = useState('worst')
   const [lateness, setLateness] = useState(null)
   const [dayOfWeek, setDayOfWeek] = useState(null)
-  const [showArchived, setShowArchived] = useState(false)
 
   const { date_from, date_to } = getDateRange(period, customRange)
   const rangeReady = Boolean(date_from && date_to)
@@ -202,6 +213,8 @@ export default function Reports() {
     return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]))
   }, [filtered, sortDir])
 
+  useScrollRestoration(!loading && data.length > 0)
+
   function toggleDept(dept) {
     setCollapsed((prev) => ({ ...prev, [dept]: !prev[dept] }))
   }
@@ -254,16 +267,16 @@ export default function Reports() {
 
       <FilterBar
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={(v) => setF('q', v)}
         department={department}
-        onDepartmentChange={setDepartment}
+        onDepartmentChange={(v) => setF('dept', v)}
         departmentOptions={departmentOptions}
         period={period}
-        onPeriodChange={setPeriod}
+        onPeriodChange={(v) => setF('period', v)}
         customRange={customRange}
-        onCustomRangeChange={setCustomRange}
+        onCustomRangeChange={(r) => setF({ df: r.date_from, dt: r.date_to })}
         showArchived={showArchived}
-        onShowArchivedChange={setShowArchived}
+        onShowArchivedChange={(v) => setF('archived', v)}
         resultShown={filtered.length}
         resultTotal={data.length}
       />
@@ -275,7 +288,7 @@ export default function Reports() {
           title={t('reports.alertTitle', { count: lowScorers.length })}
           subtitle={t('reports.alertSubtitle')}
           actionLabel={t('reports.worstFirst')}
-          onAction={() => setSortDir('worst')}
+          onAction={() => setF('dir', 'worst')}
         />
       )}
 
@@ -298,7 +311,7 @@ export default function Reports() {
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <motion.button
           type="button"
-          onClick={() => setSortDir((d) => (d === 'worst' ? 'best' : 'worst'))}
+          onClick={() => setF('dir', sortDir === 'worst' ? 'best' : 'worst')}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
           transition={{ duration: 0.15 }}

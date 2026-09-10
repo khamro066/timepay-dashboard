@@ -1,10 +1,12 @@
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import DeptCompareRow from '../components/DeptCompareRow'
 import FilterBar from '../components/FilterBar'
+import { enumParam, useFilterParams } from '../hooks/useFilterParams'
+import { useScrollRestoration } from '../hooks/useScrollRestoration'
 
 function getDateRange(period, customRange) {
   if (period === 'Custom') {
@@ -18,12 +20,21 @@ function getDateRange(period, customRange) {
   return { date_from: start.toISOString().slice(0, 10), date_to: endStr }
 }
 
+// Filter state is kept in the URL query string so back/forward and reload
+// restore it — see useFilterParams.
+const FILTER_SPEC = {
+  period: enumParam('Month'),
+  df: { default: '' },
+  dt: { default: '' },
+}
+
 export default function Departments() {
   const { t } = useTranslation()
   const api = useApi()
   const navigate = useNavigate()
-  const [period, setPeriod] = useState('Month')
-  const [customRange, setCustomRange] = useState({ date_from: '', date_to: '' })
+  const [f, setF] = useFilterParams(FILTER_SPEC)
+  const { period } = f
+  const customRange = useMemo(() => ({ date_from: f.df, date_to: f.dt }), [f.df, f.dt])
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -55,6 +66,8 @@ export default function Departments() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [api, date_from, date_to, rangeReady])
 
+  useScrollRestoration(!loading && data.length > 0)
+
   return (
     <div>
       <motion.h1
@@ -66,7 +79,12 @@ export default function Departments() {
       </motion.h1>
       <p className="text-white/40 text-sm mb-4">{t('departments.countSubtitle', { count: data.length })}</p>
 
-      <FilterBar period={period} onPeriodChange={setPeriod} customRange={customRange} onCustomRangeChange={setCustomRange} />
+      <FilterBar
+        period={period}
+        onPeriodChange={(v) => setF('period', v)}
+        customRange={customRange}
+        onCustomRangeChange={(r) => setF({ df: r.date_from, dt: r.date_to })}
+      />
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 

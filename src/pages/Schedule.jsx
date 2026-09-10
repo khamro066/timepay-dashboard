@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { useApi } from '../api/useApi'
 import FilterBar from '../components/FilterBar'
 import ScheduleMatrix from '../components/ScheduleMatrix'
+import { boolParam, enumParam, strParam, useFilterParams } from '../hooks/useFilterParams'
+import { useScrollRestoration } from '../hooks/useScrollRestoration'
 
 // Longest custom range we'll render — a company-wide grid past a quarter is
 // both a heavy response and an unreadable wall of cells.
@@ -26,14 +28,23 @@ function spanInDays(date_from, date_to) {
   return Math.round((new Date(date_to) - new Date(date_from)) / 86400000) + 1
 }
 
+// Filter state is kept in the URL query string so back/forward and reload
+// restore it — see useFilterParams.
+const FILTER_SPEC = {
+  q: { default: '' },
+  dept: strParam,
+  archived: boolParam,
+  period: enumParam('Week'),
+  df: { default: '' },
+  dt: { default: '' },
+}
+
 export default function Schedule() {
   const { t } = useTranslation()
   const api = useApi()
-  const [period, setPeriod] = useState('Week')
-  const [customRange, setCustomRange] = useState({ date_from: '', date_to: '' })
-  const [search, setSearch] = useState('')
-  const [department, setDepartment] = useState(null)
-  const [showArchived, setShowArchived] = useState(false)
+  const [f, setF] = useFilterParams(FILTER_SPEC)
+  const { q: search, dept: department, archived: showArchived, period } = f
+  const customRange = useMemo(() => ({ date_from: f.df, date_to: f.dt }), [f.df, f.dt])
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -84,6 +95,8 @@ export default function Schedule() {
 
   const totalEmployees = data?.employees.length ?? 0
 
+  useScrollRestoration(!loading && filteredEmployees.length > 0)
+
   return (
     <div>
       <motion.h1 initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-white mb-1">
@@ -97,16 +110,16 @@ export default function Schedule() {
 
       <FilterBar
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={(v) => setF('q', v)}
         department={department}
-        onDepartmentChange={setDepartment}
+        onDepartmentChange={(v) => setF('dept', v)}
         departmentOptions={departmentOptions}
         period={period}
-        onPeriodChange={setPeriod}
+        onPeriodChange={(v) => setF('period', v)}
         customRange={customRange}
-        onCustomRangeChange={setCustomRange}
+        onCustomRangeChange={(r) => setF({ df: r.date_from, dt: r.date_to })}
         showArchived={showArchived}
-        onShowArchivedChange={setShowArchived}
+        onShowArchivedChange={(v) => setF('archived', v)}
         resultShown={filteredEmployees.length}
         resultTotal={totalEmployees}
       />
