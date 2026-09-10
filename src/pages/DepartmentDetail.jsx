@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
+import AttendanceBadge from '../components/AttendanceBadge'
 import Avatar from '../components/Avatar'
 import ListNavRow from '../components/ListNavRow'
 import PeriodTabs from '../components/PeriodTabs'
-import ScoreBadge from '../components/ScoreBadge'
 
 function getDateRange(period) {
   const end = new Date()
@@ -94,7 +94,15 @@ export default function DepartmentDetail() {
             leading={<Avatar src={emp.profile_image} name={emp.full_name} size="md" />}
             title={emp.full_name}
             subtitle={emp.position}
-            trailing={<ScoreBadge score={emp.attendance_rate} label={t('common.attendance')} />}
+            trailing={
+              <AttendanceBadge
+                score={emp.attendance_rate}
+                label={t('common.attendance')}
+                presentDays={emp.present_days}
+                expectedDays={emp.expected_working_days}
+                excusedDays={emp.excused_absence_days}
+              />
+            }
             onClick={() => navigate(`/employees/${emp.employee_id}`)}
           />
         ))}

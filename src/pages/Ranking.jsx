@@ -1,8 +1,11 @@
-import { motion } from 'framer-motion'
-import { useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronDown } from 'lucide-react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
+import AttendanceBadge from '../components/AttendanceBadge'
+import AttendanceBreakdownPanel from '../components/AttendanceBreakdownPanel'
 import Avatar from '../components/Avatar'
 import DisciplineTiers from '../components/DisciplineTiers'
 import FilterBar from '../components/FilterBar'
@@ -69,6 +72,8 @@ export default function Ranking() {
   const [department, setDepartment] = useState(null)
   const [sort, setSort] = useState('attendance_desc')
   const [showArchived, setShowArchived] = useState(false)
+  // Row whose attendance-% breakdown is expanded (desktop table only).
+  const [expandedId, setExpandedId] = useState(null)
 
   const { date_from, date_to } = getDateRange(period, customRange)
   const rangeReady = Boolean(date_from && date_to)
@@ -212,37 +217,86 @@ export default function Ranking() {
                 </tr>
               </thead>
               <tbody>
-                {sorted.map((row, i) => (
-                  <motion.tr
-                    key={row.employee_id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(i * 0.02, 0.4), duration: 0.2 }}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={() => navigate(`/employees/${row.employee_id}`)}
-                    className={`border-b border-white/5 last:border-0 cursor-pointer ${i < 10 ? 'bg-violet-500/[0.04]' : ''}`}
-                  >
-                    <td className="px-4 py-3 text-white/40">{i + 1}</td>
-                    <td className="px-4 py-3 text-white font-medium whitespace-nowrap">
-                      <div className="flex items-center gap-2.5">
-                        <Avatar src={row.profile_image} name={row.full_name} size="sm" />
-                        {row.full_name}
-                        {STATUS_TAG[row.status] && (
-                          <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${STATUS_TAG[row.status].className}`}>
-                            {t(STATUS_TAG[row.status].labelKey)}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-white/60 whitespace-nowrap">{row.department}</td>
-                    <td className="px-4 py-3">
-                      <ScoreBadge score={row.attendance_rate} size="lg" />
-                    </td>
-                    <td className="px-4 py-3 text-white/60">{row.late_days}</td>
-                    <td className="px-4 py-3 text-white/60">{row.absent_days}</td>
-                  </motion.tr>
-                ))}
+                {sorted.map((row, i) => {
+                  const expanded = expandedId === row.employee_id
+                  return (
+                   <Fragment key={row.employee_id}>
+                    <motion.tr
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(i * 0.02, 0.4), duration: 0.2 }}
+                      onClick={() => navigate(`/employees/${row.employee_id}`)}
+                      className={`border-b border-white/5 cursor-pointer ${
+                        i < 10 && !expanded ? 'bg-violet-500/[0.04]' : ''
+                      } ${expanded ? 'bg-white/[0.03] !border-transparent' : 'last:border-0'}`}
+                    >
+                      <td className="px-4 py-3 text-white/40">{i + 1}</td>
+                      <td className="px-4 py-3 text-white font-medium whitespace-nowrap">
+                        <div className="flex items-center gap-2.5">
+                          <Avatar src={row.profile_image} name={row.full_name} size="sm" />
+                          {row.full_name}
+                          {STATUS_TAG[row.status] && (
+                            <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${STATUS_TAG[row.status].className}`}>
+                              {t(STATUS_TAG[row.status].labelKey)}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-white/60 whitespace-nowrap">{row.department}</td>
+                      <td className="px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setExpandedId(expanded ? null : row.employee_id)
+                          }}
+                          aria-expanded={expanded}
+                          className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                        >
+                          <ScoreBadge
+                            score={row.attendance_rate}
+                            size="lg"
+                            trailing={
+                              typeof row.expected_working_days === 'number' ? (
+                                <motion.span
+                                  animate={{ rotate: expanded ? 180 : 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="text-white/30"
+                                >
+                                  <ChevronDown className="w-3.5 h-3.5" />
+                                </motion.span>
+                              ) : null
+                            }
+                          />
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-white/60">{row.late_days}</td>
+                      <td className="px-4 py-3 text-white/60">{row.absent_days}</td>
+                    </motion.tr>
+                    <AnimatePresence initial={false}>
+                      {expanded && (
+                        <motion.tr
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="border-b border-white/5"
+                        >
+                          <td colSpan={COLUMN_KEYS.length + 1} className="px-4 pb-3 pt-0">
+                            <div className="max-w-sm">
+                              <AttendanceBreakdownPanel
+                                presentDays={row.present_days}
+                                expectedDays={row.expected_working_days}
+                                rate={row.attendance_rate}
+                                excusedDays={row.excused_absence_days}
+                              />
+                            </div>
+                          </td>
+                        </motion.tr>
+                      )}
+                    </AnimatePresence>
+                   </Fragment>
+                  )
+                })}
                 {sorted.length === 0 && (
                   <tr>
                     <td colSpan={COLUMN_KEYS.length + 1} className="px-4 py-8 text-center text-white/40">
@@ -284,7 +338,13 @@ export default function Ranking() {
                   </div>
                   <p className="text-white/40 text-xs truncate">{row.department}</p>
                 </div>
-                <ScoreBadge score={row.attendance_rate} label={t('common.attendance')} />
+                <AttendanceBadge
+                  score={row.attendance_rate}
+                  label={t('common.attendance')}
+                  presentDays={row.present_days}
+                  expectedDays={row.expected_working_days}
+                  excusedDays={row.excused_absence_days}
+                />
               </div>
               <p className="text-white/45 text-xs mt-2.5 pt-2.5 border-t border-white/5">
                 {t('ranking.cardSupport', { late: row.late_days, absent: row.absent_days })}

@@ -5,6 +5,14 @@
     "hoursShort": "{{h}} ч {{m}} мин",
     "close": "Закрыть"
   },
+  "attendanceBreakdown": {
+    "title": "Как рассчитана посещаемость",
+    "formula": "пришёл на работу {{present}} дн. ÷ нужно было отработать {{expected}} дн.",
+    "result": "= {{pct}}%",
+    "excused": "из них {{count}} дн. — отсутствие по причине",
+    "noData": "В этом периоде нет рабочих дней.",
+    "last30": "последние 30 дней"
+  },
   "filters": {
     "searchPlaceholder": "Поиск по имени...",
     "all": "Все",
@@ -58,6 +66,7 @@
     "barchasi": "Всего",
     "ishda": "На месте",
     "kech": "Опоздали",
+    "ertaKetgan": "Ушли рано",
     "ishdaEmas": "Отсутствуют",
     "topToday": "Топ 5 сегодня",
     "topWeek": "Топ 5 за неделю",
@@ -65,7 +74,19 @@
     "topLatest": "Топ 5 за последний день",
     "latestData": "Данных за сегодня ещё нет · последние: {{date}}",
     "noData": "Нет данных за этот период.",
-    "loadError": "Не удалось загрузить данные панели управления."
+    "loadError": "Не удалось загрузить данные панели управления.",
+    "detailsButton": "Подробнее",
+    "breakdownTitle": "Детали за день",
+    "breakdownDate": "Ситуация на {{date}}",
+    "groupAbsentExcused": "Отсутствуют по причине",
+    "groupAbsentUnexcused": "Отсутствуют без причины",
+    "tagExcused": "По причине",
+    "tagUnexcused": "Без причины",
+    "lateBy": "+{{count}} мин",
+    "cameAt": "пришёл в {{time}}",
+    "leftAt": "ушёл в {{time}}",
+    "breakdownEmpty": "Нет данных за этот день.",
+    "breakdownNoMatch": "Никого не найдено."
   },
   "ranking": {
     "employeeCount": "{{count}} сотрудников",
@@ -92,10 +113,11 @@
     "loadError": "Не удалось загрузить данные рейтинга."
   },
   "employees": {
-    "countSubtitle": "{{filtered}} из {{total}} · последние 30 дней",
+    "countSubtitle": "{{filtered}} из {{total}} · посещаемость: 30 дней",
     "searchPlaceholder": "Поиск по имени или отделу...",
     "late": "Опоздания",
     "absent": "Отсутствия",
+    "thisMonth": "В этом месяце: {{late}} опозданий · {{absent}} отсутствий",
     "notFound": "Сотрудники не найдены.",
     "loadError": "Не удалось загрузить сотрудников."
   },

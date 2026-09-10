@@ -5,6 +5,14 @@
     "hoursShort": "{{h}} soat {{m}} daq",
     "close": "Yopish"
   },
+  "attendanceBreakdown": {
+    "title": "Davomat qanday hisoblangan",
+    "formula": "{{present}} kun ishga keldi ÷ {{expected}} kun ishlashi kerak edi",
+    "result": "= {{pct}}%",
+    "excused": "shundan {{count}} kun sababli yo'qlik",
+    "noData": "Bu davrda ish kunlari yo'q.",
+    "last30": "so'nggi 30 kun"
+  },
   "filters": {
     "searchPlaceholder": "Ism bo'yicha qidirish...",
     "all": "Barchasi",
@@ -58,6 +66,7 @@
     "barchasi": "Barchasi",
     "ishda": "Ishda",
     "kech": "Kech",
+    "ertaKetgan": "Erta ketgan",
     "ishdaEmas": "Ishda emas",
     "topToday": "Bugungi TOP 5",
     "topWeek": "Shu haftadagi TOP 5",
@@ -65,7 +74,19 @@
     "topLatest": "So'nggi kun TOP 5",
     "latestData": "Bugungi ma'lumot hali yo'q · eng so'nggi: {{date}}",
     "noData": "Bu davr uchun ma'lumot yo'q.",
-    "loadError": "Boshqaruv paneli ma'lumotlarini yuklab bo'lmadi."
+    "loadError": "Boshqaruv paneli ma'lumotlarini yuklab bo'lmadi.",
+    "detailsButton": "Batafsil",
+    "breakdownTitle": "Kunlik tafsilot",
+    "breakdownDate": "{{date}} sanasi holati",
+    "groupAbsentExcused": "Sababli kelmagan",
+    "groupAbsentUnexcused": "Sababsiz kelmagan",
+    "tagExcused": "Sababli",
+    "tagUnexcused": "Sababsiz",
+    "lateBy": "+{{count}} daq",
+    "cameAt": "keldi {{time}}",
+    "leftAt": "ketdi {{time}}",
+    "breakdownEmpty": "Bu kun uchun ma'lumot yo'q.",
+    "breakdownNoMatch": "Hech kim topilmadi."
   },
   "ranking": {
     "employeeCount": "{{count}} xodim",
@@ -92,10 +113,11 @@
     "loadError": "Reyting ma'lumotlarini yuklab bo'lmadi."
   },
   "employees": {
-    "countSubtitle": "{{filtered}} / {{total}} · so'nggi 30 kun",
+    "countSubtitle": "{{filtered}} / {{total}} · davomat: so'nggi 30 kun",
     "searchPlaceholder": "Ism yoki bo'lim bo'yicha qidirish...",
     "late": "Kech qolgan",
     "absent": "Yo'q bo'lgan",
+    "thisMonth": "Bu oy: {{late}} marta kech · {{absent}} kun yo'q",
     "notFound": "Xodim topilmadi.",
     "loadError": "Xodimlarni yuklab bo'lmadi."
   },

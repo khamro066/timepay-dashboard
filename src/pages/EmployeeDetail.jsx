@@ -1,9 +1,10 @@
-import { motion } from 'framer-motion'
-import { ArrowLeft, CheckCircle2, Clock3, LogOut, PlusCircle, TimerReset, User } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowLeft, CheckCircle2, ChevronDown, Clock3, LogOut, PlusCircle, TimerReset, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
+import AttendanceBreakdownPanel from '../components/AttendanceBreakdownPanel'
 import EmployeeCalendarHeatmap from '../components/EmployeeCalendarHeatmap'
 import EmployeeLeaveManager from '../components/EmployeeLeaveManager'
 import EmployeeStatusSelect from '../components/EmployeeStatusSelect'
@@ -48,6 +49,7 @@ export default function EmployeeDetail() {
   const [error, setError] = useState('')
   const [imageFailed, setImageFailed] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [showBreakdown, setShowBreakdown] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -137,7 +139,43 @@ export default function EmployeeDetail() {
       <div className={`transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}>
         <p className="text-white/40 text-xs font-medium uppercase tracking-wide mb-3">{t('employeeDetail.statsTitle')}</p>
         <div className="mb-6 sm:max-w-xs">
-          <StatCard label={t('employeeDetail.attendanceRate')} value={fmtPct(data?.attendance_rate)} icon={CheckCircle2} tone="teal" />
+          <button
+            type="button"
+            onClick={() => setShowBreakdown((v) => !v)}
+            aria-expanded={showBreakdown}
+            className="block w-full text-left rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            <div className="relative">
+              <StatCard label={t('employeeDetail.attendanceRate')} value={fmtPct(data?.attendance_rate)} icon={CheckCircle2} tone="teal" />
+              <motion.span
+                animate={{ rotate: showBreakdown ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute bottom-3 right-4 text-white/25"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </motion.span>
+            </div>
+          </button>
+          <AnimatePresence initial={false}>
+            {showBreakdown && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-2">
+                  <AttendanceBreakdownPanel
+                    presentDays={data?.present_days}
+                    expectedDays={data?.expected_working_days}
+                    rate={data?.attendance_rate}
+                    excusedDays={data?.excused_absence_days}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="glass-card rounded-2xl p-4 mb-6 flex flex-wrap gap-x-8 gap-y-3">

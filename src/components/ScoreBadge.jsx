@@ -12,15 +12,18 @@ const SIZE_CLASSES = {
   lg: 'px-3.5 py-1.5 text-base',
 }
 
-export default function ScoreBadge({ score, label, size = 'md' }) {
+export default function ScoreBadge({ score, label, size = 'md', trailing }) {
   const pctLabel = score === null || score === undefined ? '—' : `${Math.round(score * 100)}%`
 
   return (
     <span className="inline-flex flex-col items-end gap-1">
-      <span
-        className={`inline-flex items-center rounded-full font-semibold border ${SIZE_CLASSES[size]} ${toneClasses(score)}`}
-      >
-        {pctLabel}
+      <span className="inline-flex items-center gap-1">
+        <span
+          className={`inline-flex items-center rounded-full font-semibold border ${SIZE_CLASSES[size]} ${toneClasses(score)}`}
+        >
+          {pctLabel}
+        </span>
+        {trailing}
       </span>
       {label && <span className="text-[10px] text-white/40 font-medium whitespace-nowrap">{label}</span>}
     </span>

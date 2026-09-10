@@ -1,15 +1,17 @@
 import { motion } from 'framer-motion'
+import { ChevronDown } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
+import AttendanceBadge from '../components/AttendanceBadge'
 import Avatar from '../components/Avatar'
 import DateStepper from '../components/DateStepper'
+import DayBreakdownSheet from '../components/DayBreakdownSheet'
 import LegendRow from '../components/LegendRow'
 import PeriodTabs from '../components/PeriodTabs'
 import PillGroup from '../components/PillGroup'
 import RingChart from '../components/RingChart'
-import ScoreBadge from '../components/ScoreBadge'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
@@ -51,6 +53,7 @@ export default function Dashboard() {
   const [rankLoading, setRankLoading] = useState(true)
   const [statsLoading, setStatsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [breakdownOpen, setBreakdownOpen] = useState(false)
 
   // On the "Bugun" tab, if the current day has no data yet (sync hasn't run),
   // fall back to the most recent day that does. Only the actual current date
@@ -58,6 +61,11 @@ export default function Dashboard() {
   const isCurrentDay = selectedDate === todayStr()
   const isFallback = period === 'Today' && isCurrentDay && latestDate !== null && latestDate < selectedDate
   const effectiveDate = isFallback ? latestDate : selectedDate
+
+  // The day drill-down only makes sense for the single-day "Today" view.
+  useEffect(() => {
+    if (period !== 'Today') setBreakdownOpen(false)
+  }, [period])
 
   const { date_from, date_to } = getDateRange(period, effectiveDate)
 
@@ -159,7 +167,10 @@ export default function Dashboard() {
   }, [period, todayStats, businessRows])
 
   const loading = rankLoading || (period === 'Today' && statsLoading)
-  const ontimeCount = Math.max(0, (stats?.present ?? 0) - (stats?.late ?? 0))
+  // Today's headcount endpoint returns present_ontime (arrived on time and
+  // stayed) so the legend matches the drill-down groups exactly; Week/Month
+  // aggregates fall back to "present minus late".
+  const ontimeCount = stats?.present_ontime ?? Math.max(0, (stats?.present ?? 0) - (stats?.late ?? 0))
   const workdayTotal = (stats?.present ?? 0) + (stats?.absent ?? 0)
   const attendanceRate = workdayTotal > 0 ? Math.round(((stats?.present ?? 0) / workdayTotal) * 100) : 0
 
@@ -210,12 +221,27 @@ export default function Dashboard() {
             <div className="flex-1 min-w-0 flex flex-col gap-3">
               <LegendRow color="#2dd4bf" value={ontimeCount} label={t('dashboard.ishda')} />
               <LegendRow color="#fbbf24" value={stats?.late ?? 0} label={t('dashboard.kech')} />
+              {period === 'Today' && (
+                <LegendRow color="#fb923c" value={stats?.early_leaving ?? 0} label={t('dashboard.ertaKetgan')} />
+              )}
               <LegendRow color="#f87171" value={stats?.absent ?? 0} label={t('dashboard.ishdaEmas')} />
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-sm">
-            <span className="text-white/45">{t('dashboard.barchasi')}</span>
-            <span className="text-white font-semibold tabular-nums">{stats?.total_employees ?? 0}</span>
+          <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-3 text-sm">
+            <span className="text-white/45">
+              {t('dashboard.barchasi')}{' '}
+              <span className="text-white font-semibold tabular-nums">{stats?.total_employees ?? 0}</span>
+            </span>
+            {period === 'Today' && (
+              <button
+                type="button"
+                onClick={() => setBreakdownOpen(true)}
+                className="inline-flex items-center gap-1 text-violet-300 hover:text-violet-200 font-medium transition-colors"
+              >
+                {t('dashboard.detailsButton')}
+                <ChevronDown className="w-4 h-4 -rotate-90" />
+              </button>
+            )}
           </div>
         </motion.div>
 
@@ -250,7 +276,13 @@ export default function Dashboard() {
                     <p className="text-white/40 text-xs truncate">{emp.department}</p>
                   </div>
                 </div>
-                <ScoreBadge score={emp.attendance_rate} label={t('common.attendance')} />
+                <AttendanceBadge
+                  score={emp.attendance_rate}
+                  label={t('common.attendance')}
+                  presentDays={emp.present_days}
+                  expectedDays={emp.expected_working_days}
+                  excusedDays={emp.excused_absence_days}
+                />
               </motion.div>
             ))}
             {!loading && topFive.length === 0 && (
@@ -259,6 +291,14 @@ export default function Dashboard() {
           </div>
         </motion.div>
       </div>
+
+      <DayBreakdownSheet
+        open={breakdownOpen}
+        onClose={() => setBreakdownOpen(false)}
+        date={effectiveDate}
+        department={business}
+        api={api}
+      />
     </div>
   )
 }

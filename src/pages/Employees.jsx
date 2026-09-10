@@ -3,15 +3,28 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
+import AttendanceBadge from '../components/AttendanceBadge'
 import Avatar from '../components/Avatar'
 import FilterBar from '../components/FilterBar'
-import ScoreBadge from '../components/ScoreBadge'
+
+// Local calendar date — toISOString() is UTC and shifts a day for anyone
+// east of Greenwich in the early hours.
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 function last30Days() {
   const end = new Date()
   const start = new Date(end)
   start.setDate(start.getDate() - 29)
-  return { date_from: start.toISOString().slice(0, 10), date_to: end.toISOString().slice(0, 10) }
+  return { date_from: localDateStr(start), date_to: localDateStr(end) }
+}
+
+// 1st of the current calendar month through today, inclusive — the window
+// the per-card "Bu oy" late/absent counts are scoped to.
+function monthToDate() {
+  const now = new Date()
+  return { date_from: localDateStr(new Date(now.getFullYear(), now.getMonth(), 1)), date_to: localDateStr(now) }
 }
 
 const SORT_OPTIONS = [
@@ -43,6 +56,10 @@ export default function Employees() {
   const api = useApi()
   const navigate = useNavigate()
   const [data, setData] = useState([])
+  // employee_id -> { late_days, absent_days } for the current month so far.
+  // Kept separate from `data` (which is the 30-day window powering the
+  // attendance %) so the two windows can be labelled independently.
+  const [monthCounts, setMonthCounts] = useState(new Map())
   const [search, setSearch] = useState('')
   const [department, setDepartment] = useState(null)
   const [position, setPosition] = useState(null)
@@ -58,9 +75,17 @@ export default function Employees() {
       setLoading(true)
       setError('')
       try {
-        const { date_from, date_to } = last30Days()
-        const res = await api.get('/api/ranking', { params: { date_from, date_to, include_archived: showArchived } })
-        if (!cancelled) setData(res.data)
+        const wide = last30Days()
+        const mtd = monthToDate()
+        const [wideRes, mtdRes] = await Promise.all([
+          api.get('/api/ranking', { params: { ...wide, include_archived: showArchived } }),
+          api.get('/api/ranking', { params: { ...mtd, include_archived: showArchived } }),
+        ])
+        if (cancelled) return
+        setData(wideRes.data)
+        setMonthCounts(
+          new Map(mtdRes.data.map((r) => [r.employee_id, { late_days: r.late_days, absent_days: r.absent_days }])),
+        )
       } catch {
         if (!cancelled) setError('employees.loadError')
       } finally {
@@ -79,16 +104,21 @@ export default function Employees() {
     return [...set].sort((a, b) => a.localeCompare(b))
   }, [data])
 
-  // Distinct positions actually present in the data, most common first.
+  // Distinct positions, most common first — cascaded to the selected
+  // department so the dropdown only offers positions that exist there.
+  // "Barchasi" department => the full unfiltered list.
   const positionOptions = useMemo(() => {
     const counts = new Map()
     for (const e of data) {
-      if (e.position) counts.set(e.position, (counts.get(e.position) ?? 0) + 1)
+      if (!e.position) continue
+      if (department && e.department !== department) continue
+      counts.set(e.position, (counts.get(e.position) ?? 0) + 1)
     }
     return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([p]) => p)
-  }, [data])
+  }, [data, department])
 
-  // Clear the position filter if a data reload (e.g. archived toggle) removes it.
+  // Clear the position filter when it no longer applies — either a data
+  // reload (archived toggle) or a department change that cascades it away.
   useEffect(() => {
     if (position && !positionOptions.includes(position)) setPosition(null)
   }, [position, positionOptions])
@@ -164,15 +194,20 @@ export default function Employees() {
                   </p>
                 </div>
               </div>
-              <ScoreBadge score={emp.attendance_rate} label={t('common.attendance')} />
+              <AttendanceBadge
+                score={emp.attendance_rate}
+                label={t('common.attendance')}
+                presentDays={emp.present_days}
+                expectedDays={emp.expected_working_days}
+                excusedDays={emp.excused_absence_days}
+                periodLabel={t('attendanceBreakdown.last30')}
+              />
             </div>
-            <div className="flex gap-4 mt-3 text-xs text-white/50">
-              <span>
-                {t('employees.late')}: {emp.late_days}
-              </span>
-              <span>
-                {t('employees.absent')}: {emp.absent_days}
-              </span>
+            <div className="mt-3 text-xs text-white/50">
+              {t('employees.thisMonth', {
+                late: monthCounts.get(emp.employee_id)?.late_days ?? 0,
+                absent: monthCounts.get(emp.employee_id)?.absent_days ?? 0,
+              })}
             </div>
           </motion.div>
         ))}

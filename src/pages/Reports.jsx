@@ -4,12 +4,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApi } from '../api/useApi'
 import AlertCard from '../components/AlertCard'
+import AttendanceBadge from '../components/AttendanceBadge'
 import Avatar from '../components/Avatar'
 import DayOfWeekChart from '../components/DayOfWeekChart'
 import FilterBar from '../components/FilterBar'
 import LatenessBars from '../components/LatenessBars'
 import NoteCell from '../components/NoteCell'
-import ScoreBadge from '../components/ScoreBadge'
 
 function getDateRange(period, customRange) {
   if (period === 'Custom') {
@@ -391,7 +391,14 @@ export default function Reports() {
                                   })}
                                 </p>
                               </div>
-                              <ScoreBadge score={row.attendance_rate} label={t('common.attendance')} size="lg" />
+                              <AttendanceBadge
+                                score={row.attendance_rate}
+                                label={t('common.attendance')}
+                                size="lg"
+                                presentDays={row.present_days}
+                                expectedDays={row.expected_working_days}
+                                excusedDays={row.excused_absence_days}
+                              />
                             </div>
 
                             <button
