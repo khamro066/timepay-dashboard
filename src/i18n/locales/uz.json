@@ -120,6 +120,7 @@
     "mtdPresent": "Ishga keldi",
     "mtdLate": "Kech keldi",
     "mtdAbsent": "Kelmadi",
+    "archivePill": "Arxiv",
     "notFound": "Xodim topilmadi.",
     "loadError": "Xodimlarni yuklab bo'lmadi."
   },

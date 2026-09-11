@@ -6,6 +6,7 @@ import { useApi } from '../api/useApi'
 import AttendanceBadge from '../components/AttendanceBadge'
 import Avatar from '../components/Avatar'
 import FilterBar from '../components/FilterBar'
+import PillGroup from '../components/PillGroup'
 import { boolParam, enumParam, strParam, useFilterParams } from '../hooks/useFilterParams'
 import { useScrollRestoration } from '../hooks/useScrollRestoration'
 
@@ -77,6 +78,9 @@ export default function Employees() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // Every status is fetched once, unconditionally — the archive pill's
+  // count and the toggle itself both become instant client-side filters
+  // below instead of a second round trip each time it's flipped.
   useEffect(() => {
     let cancelled = false
 
@@ -87,8 +91,8 @@ export default function Employees() {
         const wide = last30Days()
         const mtd = monthToDate()
         const [wideRes, mtdRes] = await Promise.all([
-          api.get('/api/ranking', { params: { ...wide, include_archived: showArchived } }),
-          api.get('/api/ranking', { params: { ...mtd, include_archived: showArchived } }),
+          api.get('/api/ranking', { params: { ...wide, include_archived: true } }),
+          api.get('/api/ranking', { params: { ...mtd, include_archived: true } }),
         ])
         if (cancelled) return
         setData(wideRes.data)
@@ -117,44 +121,62 @@ export default function Employees() {
     return () => {
       cancelled = true
     }
-  }, [api, showArchived])
+  }, [api])
+
+  // Paused/archived staff are hidden unless the "Arxiv" pill is on — same
+  // rows as before, just filtered client-side now that everything is
+  // fetched up front.
+  const visibleData = useMemo(
+    () => (showArchived ? data : data.filter((e) => e.status === 'active')),
+    [data, showArchived],
+  )
+  const archivedCount = useMemo(() => data.filter((e) => e.status !== 'active').length, [data])
 
   const departmentOptions = useMemo(() => {
-    const set = new Set(data.map((e) => e.department).filter(Boolean))
+    const set = new Set(visibleData.map((e) => e.department).filter(Boolean))
     return [...set].sort((a, b) => a.localeCompare(b))
-  }, [data])
+  }, [visibleData])
 
-  // Distinct positions, most common first — cascaded to the selected
-  // department so the dropdown only offers positions that exist there.
-  // "Barchasi" department => the full unfiltered list.
-  const positionOptions = useMemo(() => {
+  // Distinct positions with counts, most common first — cascaded to the
+  // selected department so the pill row only offers positions that exist
+  // there. "Barchasi" department => the full unfiltered list.
+  const positionCounts = useMemo(() => {
     const counts = new Map()
-    for (const e of data) {
+    for (const e of visibleData) {
       if (!e.position) continue
       if (department && e.department !== department) continue
       counts.set(e.position, (counts.get(e.position) ?? 0) + 1)
     }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([p]) => p)
-  }, [data, department])
+    return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  }, [visibleData, department])
 
-  // Clear the position filter when it no longer applies — either a data
-  // reload (archived toggle) or a department change that cascades it away.
+  // Clear the position filter when it no longer applies — either an
+  // archive-toggle flip or a department change that cascades it away.
   useEffect(() => {
-    if (position && !positionOptions.includes(position)) setF('pos', null)
-  }, [position, positionOptions, setF])
+    if (position && !positionCounts.some(([p]) => p === position)) setF('pos', null)
+  }, [position, positionCounts, setF])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    const rows = data.filter((e) => {
+    const rows = visibleData.filter((e) => {
       if (department && e.department !== department) return false
       if (position && e.position !== position) return false
       if (q && !e.full_name?.toLowerCase().includes(q)) return false
       return true
     })
     return sortRows(rows, sort)
-  }, [data, search, department, position, sort])
+  }, [visibleData, search, department, position, sort])
 
   useScrollRestoration(!loading && data.length > 0)
+
+  const departmentPillOptions = [
+    { value: null, label: t('filters.all') },
+    ...departmentOptions.map((d) => ({ value: d, label: d })),
+  ]
+  const positionPillOptions = [
+    { value: null, label: t('filters.allPositions') },
+    ...positionCounts.map(([p, count]) => ({ value: p, label: p, count })),
+  ]
 
   return (
     <div>
@@ -165,27 +187,31 @@ export default function Employees() {
       >
         {t('nav.employees')}
       </motion.h1>
-      <p className="text-white/40 text-sm mb-4">{t('employees.countSubtitle', { filtered: filtered.length, total: data.length })}</p>
+      <p className="text-white/40 text-sm mb-4">{t('employees.countSubtitle', { filtered: filtered.length, total: visibleData.length })}</p>
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 
       <FilterBar
         search={search}
         onSearchChange={(v) => setF('q', v)}
-        department={department}
-        onDepartmentChange={(v) => setF('dept', v)}
-        departmentOptions={departmentOptions}
-        position={position}
-        onPositionChange={(v) => setF('pos', v)}
-        positionOptions={positionOptions}
         sort={sort}
         onSortChange={(v) => setF('sort', v)}
         sortOptions={SORT_OPTIONS}
-        showArchived={showArchived}
-        onShowArchivedChange={(v) => setF('archived', v)}
-        resultShown={filtered.length}
-        resultTotal={data.length}
-      />
+      >
+        {/* Department / archive / position pill rows — kept inside FilterBar's
+            sticky container (see its `children` slot) so they stay pinned
+            together with the search bar, matching the sticky behaviour the
+            rest of the filter UI already has. */}
+        <div data-testid="employee-filter-pills" className="flex flex-col gap-2.5 mt-3">
+          <PillGroup options={departmentPillOptions} value={department} onChange={(v) => setF('dept', v)} />
+          <PillGroup
+            options={[{ value: 'archived', label: t('employees.archivePill'), count: archivedCount }]}
+            value={showArchived ? 'archived' : null}
+            onChange={() => setF('archived', !showArchived)}
+          />
+          <PillGroup options={positionPillOptions} value={position} onChange={(v) => setF('pos', v)} />
+        </div>
+      </FilterBar>
 
       <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}>
         {filtered.map((emp, i) => (

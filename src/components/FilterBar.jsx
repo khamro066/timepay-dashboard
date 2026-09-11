@@ -177,6 +177,12 @@ export default function FilterBar({
   onShowArchivedChange,
   resultShown,
   resultTotal,
+  // Extra content rendered inside the same sticky container, below the
+  // search/filters row — e.g. Employees' department/archive/position pill
+  // rows. Keeping it in this container (rather than a second sticky block)
+  // avoids two independent `position: sticky` elements both pinning to
+  // top: 0 and overlapping each other.
+  children,
 }) {
   const { t } = useTranslation()
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -288,6 +294,7 @@ export default function FilterBar({
       {showCount && (
         <p className="text-white/40 text-xs mt-2.5">{t('filters.resultCount', { shown: resultShown, total: resultTotal })}</p>
       )}
+      {children}
       </div>
 
       {/* Mobile bottom-sheet drawer — sibling of the sticky bar so its fixed
