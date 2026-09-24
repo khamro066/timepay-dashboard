@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, CheckCircle2, ChevronDown, Clock3, LogOut, PlusCircle, TimerReset, User } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, ChevronDown, Clock3, LogOut, PlusCircle, Settings, TimerReset, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import AttendanceBreakdownPanel from '../components/AttendanceBreakdownPanel'
 import EmployeeCalendarHeatmap from '../components/EmployeeCalendarHeatmap'
@@ -81,17 +81,22 @@ export default function EmployeeDetail() {
 
   return (
     <div>
-      <motion.button
-        type="button"
-        onClick={() => navigate(-1)}
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.96 }}
-        transition={{ duration: 0.15 }}
-        className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm mb-4 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {t('employeeDetail.back')}
-      </motion.button>
+      <div className="flex items-center justify-between mb-4">
+        <motion.button
+          type="button"
+          onClick={() => navigate(-1)}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.96 }}
+          transition={{ duration: 0.15 }}
+          className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t('employeeDetail.back')}
+        </motion.button>
+        <Link to={`/admin/tuzatish/${id}`} aria-label="settings" className="text-white/10 hover:text-white/25 transition-colors p-1">
+          <Settings className="w-3.5 h-3.5" />
+        </Link>
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: -8 }}

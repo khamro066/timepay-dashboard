@@ -241,5 +241,26 @@
     "rangeTooWide": "Juda katta oraliq. \"Davr\" ni qisqaroq tanlang (eng ko'pi {{max}} kun).",
     "noData": "Bu davr uchun ma'lumot yo'q.",
     "loadError": "Jadval ma'lumotlarini yuklab bo'lmadi."
+  },
+  "corrections": {
+    "stepUpTitle": "Tasdiqlash talab qilinadi",
+    "stepUpSubtitle": "Davom etish uchun parolni qayta kiriting",
+    "stepUpSubmit": "Tasdiqlash",
+    "stepUpErrorInvalid": "Parol noto'g'ri",
+    "stepUpErrorGeneric": "Nimadir xato ketdi",
+    "panelTitle": "Vaqtni tuzatish",
+    "editAction": "Vaqtni tuzatish",
+    "tag": "Tahrirlangan",
+    "historyTitle": "Tarix",
+    "timeChangeIn": "Kelgan: {{from}} → {{to}}",
+    "timeChangeOut": "Ketgan: {{from}} → {{to}}",
+    "byLine": "{{user}} · {{date}}",
+    "reasonLabel": "Sabab",
+    "reasonPlaceholder": "Nega tuzatilyapti...",
+    "saveAction": "Saqlash",
+    "formErrorNeedOne": "Kamida bitta vaqtni kiriting",
+    "formErrorReason": "Sabab kiritish shart",
+    "formErrorGeneric": "Saqlanmadi",
+    "loadError": "Ma'lumotlarni yuklab bo'lmadi."
   }
 }

@@ -241,5 +241,26 @@
     "rangeTooWide": "Слишком большой диапазон. Выберите период короче (максимум {{max}} дн.).",
     "noData": "Нет данных за этот период.",
     "loadError": "Не удалось загрузить данные табеля."
+  },
+  "corrections": {
+    "stepUpTitle": "Требуется подтверждение",
+    "stepUpSubtitle": "Введите пароль ещё раз, чтобы продолжить",
+    "stepUpSubmit": "Подтвердить",
+    "stepUpErrorInvalid": "Неверный пароль",
+    "stepUpErrorGeneric": "Что-то пошло не так",
+    "panelTitle": "Исправление времени",
+    "editAction": "Исправить время",
+    "tag": "Исправлено",
+    "historyTitle": "История",
+    "timeChangeIn": "Приход: {{from}} → {{to}}",
+    "timeChangeOut": "Уход: {{from}} → {{to}}",
+    "byLine": "{{user}} · {{date}}",
+    "reasonLabel": "Причина",
+    "reasonPlaceholder": "Почему исправляется...",
+    "saveAction": "Сохранить",
+    "formErrorNeedOne": "Укажите хотя бы одно время",
+    "formErrorReason": "Причина обязательна",
+    "formErrorGeneric": "Не сохранено",
+    "loadError": "Не удалось загрузить данные."
   }
 }

@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { LanguageProvider } from './context/LanguageContext'
+import CorrectionsAdmin from './pages/CorrectionsAdmin'
 import Dashboard from './pages/Dashboard'
 import DepartmentDetail from './pages/DepartmentDetail'
 import Departments from './pages/Departments'
@@ -39,6 +40,14 @@ function AppRoutes() {
         <Route path="/reports" element={<Reports />} />
         <Route path="/jadval" element={<Schedule />} />
       </Route>
+      <Route
+        path="/admin/tuzatish/:employeeId"
+        element={
+          <ProtectedRoute>
+            <CorrectionsAdmin />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
