@@ -64,6 +64,12 @@ function CorrectionsPanel({ employeeId, onExpired }) {
       if (!map[c.date]) map[c.date] = []
       map[c.date].push(c)
     }
+    // The API returns newest-first (for the flat history list at the top of
+    // a day); the per-day popover reads better oldest-first, like a timeline
+    // of what changed and when.
+    for (const list of Object.values(map)) {
+      list.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+    }
     return map
   }, [corrections])
 
@@ -89,7 +95,7 @@ function CorrectionsPanel({ employeeId, onExpired }) {
         {errorKey && <p className="text-red-400 text-sm mb-4">{t(errorKey)}</p>}
 
         <div className={`transition-opacity duration-200 ${loading ? 'opacity-40' : 'opacity-100'}`}>
-          <div className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface overflow-hidden">
+          <div className="rounded-2xl border border-white/5 bg-gradient-to-br from-surface-light to-surface overflow-visible">
             {days.map((day) => (
               <div key={day.date} className="border-b border-white/5 last:border-0 p-3.5">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
