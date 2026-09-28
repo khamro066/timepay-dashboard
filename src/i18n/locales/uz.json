@@ -137,6 +137,7 @@
     "statusLate": "Kech qoldi",
     "statusAbsent": "Yo'q",
     "statusExcused": "Sababli kelmadi",
+    "statusManual": "Qo'lda kiritilgan",
     "statusHoliday": "Bayram",
     "statusDayOff": "Dam olish kuni",
     "employeeStatusLabel": "Xodim holati",
@@ -218,6 +219,7 @@
     "colEarlyLeaving": "Erta ketgan kunlar soni",
     "colAvgCheckOut": "O'rtacha ishdan ketish vaqti",
     "colTotalWorked": "Umumiy ish soati",
+    "manualEntryTag": "{{count}} kun qo'lda kiritilgan",
     "colNote": "Izoh",
     "notePlaceholder": "Izoh qo'shish...",
     "noteSaved": "Saqlandi",
@@ -234,6 +236,7 @@
     "statusAbsent": "Kelmadi",
     "statusExcused": "Sababli",
     "statusHoliday": "Bayram",
+    "statusManual": "Qo'lda kiritilgan",
     "statusDayOff": "Dam olish",
     "statusNoData": "Ma'lumot yo'q",
     "legendNeutral": "Dam olish · ma'lumot yo'q",
@@ -262,5 +265,16 @@
     "formErrorReason": "Sabab kiritish shart",
     "formErrorGeneric": "Saqlanmadi",
     "loadError": "Ma'lumotlarni yuklab bo'lmadi."
+  },
+  "manualEntry": {
+    "title": "Qo'lda kiritish",
+    "addAction": "Qo'lda kiritish",
+    "dateLabel": "Sana",
+    "noteLabel": "Izoh",
+    "notePlaceholder": "Masalan: Uydan ishladi",
+    "saveAction": "Saqlash",
+    "conflictError": "Bu kun uchun Time Pay ma'lumoti allaqachon mavjud. Agar u xato bo'lsa, tuzatish vositasidan foydalaning.",
+    "formErrorRequired": "Sana, kelgan va ketgan vaqtini kiriting",
+    "formErrorGeneric": "Saqlanmadi"
   }
 }

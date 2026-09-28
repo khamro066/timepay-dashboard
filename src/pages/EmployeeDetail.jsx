@@ -9,6 +9,7 @@ import EmployeeCalendarHeatmap from '../components/EmployeeCalendarHeatmap'
 import EmployeeLeaveManager from '../components/EmployeeLeaveManager'
 import EmployeeStatusSelect from '../components/EmployeeStatusSelect'
 import LegendRow from '../components/LegendRow'
+import ManualAttendanceEntryForm from '../components/ManualAttendanceEntryForm'
 import PeriodTabs from '../components/PeriodTabs'
 import StatCard from '../components/StatCard'
 
@@ -137,6 +138,8 @@ export default function EmployeeDetail() {
 
       {data && <EmployeeLeaveManager employeeId={data.employee_id} onChanged={() => setRefreshKey((k) => k + 1)} />}
 
+      {data && <ManualAttendanceEntryForm employeeId={data.employee_id} onSaved={() => setRefreshKey((k) => k + 1)} />}
+
       <PeriodTabs period={period} onChange={setPeriod} />
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
@@ -234,10 +237,17 @@ export default function EmployeeDetail() {
                       <td className="px-4 py-2.5 text-white/60">{day.first_check_in ?? '—'}</td>
                       <td className="px-4 py-2.5 text-white/60">{day.last_check_out ?? '—'}</td>
                       <td className="px-4 py-2.5">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${status.className}`}
-                        >
-                          {t(status.labelKey)}
+                        <span className="inline-flex items-center gap-1.5">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${status.className}`}
+                          >
+                            {t(status.labelKey)}
+                          </span>
+                          {day.source === 'MANUAL' && (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold text-sky-300 bg-sky-500/15">
+                              {t('employeeDetail.statusManual')}
+                            </span>
+                          )}
                         </span>
                       </td>
                     </motion.tr>
@@ -268,10 +278,17 @@ export default function EmployeeDetail() {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-white/70 text-sm font-medium">{day.date}</span>
-                    <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${status.className}`}
-                    >
-                      {t(status.labelKey)}
+                    <span className="inline-flex items-center gap-1.5">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${status.className}`}
+                      >
+                        {t(status.labelKey)}
+                      </span>
+                      {day.source === 'MANUAL' && (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold text-sky-300 bg-sky-500/15">
+                          {t('employeeDetail.statusManual')}
+                        </span>
+                      )}
                     </span>
                   </div>
                   <div className="flex gap-6 text-sm">

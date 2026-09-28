@@ -442,6 +442,11 @@ export default function Reports() {
                                       </div>
                                     ))}
                                   </div>
+                                  {row.manual_entry_days > 0 && (
+                                    <p className="mt-3 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold text-sky-300 bg-sky-500/15">
+                                      {t('reports.manualEntryTag', { count: row.manual_entry_days })}
+                                    </p>
+                                  )}
                                   <div className="mt-3">
                                     <p className="text-white/40 text-xs mb-1">{t('reports.colNote')}</p>
                                     <NoteCell value={row.note} onSave={(note) => handleNoteSave(row.employee_id, note)} />

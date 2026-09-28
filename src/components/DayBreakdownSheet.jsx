@@ -42,7 +42,14 @@ function PersonRow({ person, kind, t }) {
     <div className="flex items-center gap-2.5 py-1.5">
       <Avatar src={person.profile_image} name={person.full_name} size="xs" />
       <div className="min-w-0 flex-1">
-        <p className="text-white/90 text-sm truncate">{person.full_name}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-white/90 text-sm truncate">{person.full_name}</p>
+          {person.source === 'MANUAL' && (
+            <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-semibold text-sky-300 bg-sky-500/15">
+              {t('employeeDetail.statusManual')}
+            </span>
+          )}
+        </div>
         {person.department && <p className="text-white/35 text-[11px] truncate">{person.department}</p>}
       </div>
       {detail}

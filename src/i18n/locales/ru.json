@@ -137,6 +137,7 @@
     "statusLate": "Опоздал",
     "statusAbsent": "Отсутствовал",
     "statusExcused": "Отсутствовал по причине",
+    "statusManual": "Введено вручную",
     "statusHoliday": "Праздник",
     "statusDayOff": "Выходной",
     "employeeStatusLabel": "Статус сотрудника",
@@ -218,6 +219,7 @@
     "colEarlyLeaving": "Дней раннего ухода",
     "colAvgCheckOut": "Среднее время ухода",
     "colTotalWorked": "Всего отработано часов",
+    "manualEntryTag": "{{count}} дн. введено вручную",
     "colNote": "Примечание",
     "notePlaceholder": "Добавить примечание...",
     "noteSaved": "Сохранено",
@@ -233,6 +235,7 @@
     "statusLate": "Опоздал",
     "statusAbsent": "Отсутствовал",
     "statusExcused": "По причине",
+    "statusManual": "Введено вручную",
     "statusHoliday": "Праздник",
     "statusDayOff": "Выходной",
     "statusNoData": "Нет данных",
@@ -262,5 +265,16 @@
     "formErrorReason": "Причина обязательна",
     "formErrorGeneric": "Не сохранено",
     "loadError": "Не удалось загрузить данные."
+  },
+  "manualEntry": {
+    "title": "Ввести вручную",
+    "addAction": "Ввести вручную",
+    "dateLabel": "Дата",
+    "noteLabel": "Примечание",
+    "notePlaceholder": "Например: Работал из дома",
+    "saveAction": "Сохранить",
+    "conflictError": "На эту дату уже есть данные Time Pay. Если они неверны, используйте инструмент исправления.",
+    "formErrorRequired": "Укажите дату, время прихода и ухода",
+    "formErrorGeneric": "Не сохранено"
   }
 }

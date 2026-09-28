@@ -25,13 +25,14 @@ function mondayIndex(date) {
   return (date.getDay() + 6) % 7
 }
 
-const LEGEND_KEYS = ['present', 'late', 'absent', 'excused', 'holiday', 'dayOff']
+const LEGEND_KEYS = ['present', 'late', 'absent', 'excused', 'manual', 'holiday', 'dayOff']
 
 const CELL_COLORS = {
   present: '#2dd4bf',
   late: '#fbbf24',
   absent: '#f87171',
   excused: '#a78bfa',
+  manual: '#38bdf8',
   holiday: '#818cf8',
 }
 
@@ -39,6 +40,7 @@ function cellStatusKey(day) {
   if (!day) return null
   if (day.is_holiday) return 'holiday'
   if (!day.is_working_day) return 'dayOff'
+  if (day.source === 'MANUAL') return 'manual'
   if (day.absent && day.excused) return 'excused'
   if (day.absent) return 'absent'
   if (day.late) return 'late'
@@ -50,6 +52,7 @@ const STATUS_LABEL_KEY = {
   late: 'employeeDetail.statusLate',
   absent: 'employeeDetail.statusAbsent',
   excused: 'employeeDetail.statusExcused',
+  manual: 'employeeDetail.statusManual',
   holiday: 'employeeDetail.statusHoliday',
   dayOff: 'employeeDetail.statusDayOff',
 }
