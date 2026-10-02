@@ -187,6 +187,8 @@
     "statOvertime": "Переработка",
     "exportButton": "Экспорт в Excel",
     "exporting": "Загрузка...",
+    "exportPdfButton": "PDF",
+    "exportingPdf": "Загрузка...",
     "worstFirst": "Сначала проблемы",
     "bestFirst": "Сначала лучшие",
     "details": "Подробнее",

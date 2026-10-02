@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, ChevronDown, Download, Loader2 } from 'lucide-react'
+import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, ChevronDown, Download, FileText, Loader2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApi } from '../api/useApi'
@@ -100,6 +100,7 @@ export default function Reports() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [exporting, setExporting] = useState(false)
+  const [exportingPdf, setExportingPdf] = useState(false)
   const [collapsed, setCollapsed] = useState({})
   const [expandedCards, setExpandedCards] = useState({})
   const [lateness, setLateness] = useState(null)
@@ -235,10 +236,9 @@ export default function Reports() {
   async function handleExport() {
     setExporting(true)
     try {
-      const res = await api.get('/api/reports/export', {
-        params: { date_from, date_to, period_key: periodKey, include_archived: showArchived },
-        responseType: 'blob',
-      })
+      const params = { date_from, date_to, period_key: periodKey, include_archived: showArchived }
+      if (department) params.department = department
+      const res = await api.get('/api/reports/export', { params, responseType: 'blob' })
       const url = URL.createObjectURL(new Blob([res.data]))
       const link = document.createElement('a')
       link.href = url
@@ -251,6 +251,27 @@ export default function Reports() {
       setError('reports.loadError')
     } finally {
       setExporting(false)
+    }
+  }
+
+  async function handleExportPdf() {
+    setExportingPdf(true)
+    try {
+      const params = { date_from, date_to, period_key: periodKey, include_archived: showArchived }
+      if (department) params.department = department
+      const res = await api.get('/api/reports/export/pdf', { params, responseType: 'blob' })
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `hisobot_${date_from}_${date_to}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch {
+      setError('reports.loadError')
+    } finally {
+      setExportingPdf(false)
     }
   }
 
@@ -321,18 +342,33 @@ export default function Reports() {
           {sortDir === 'worst' ? t('reports.worstFirst') : t('reports.bestFirst')}
         </motion.button>
 
-        <motion.button
-          type="button"
-          onClick={handleExport}
-          disabled={exporting || data.length === 0}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.96 }}
-          transition={{ duration: 0.15 }}
-          className="inline-flex items-center gap-2 px-4 py-3 md:py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 text-white text-sm font-medium shadow-lg shadow-violet-600/20 disabled:opacity-50"
-        >
-          {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-          {exporting ? t('reports.exporting') : t('reports.exportButton')}
-        </motion.button>
+        <div className="flex items-center gap-2">
+          <motion.button
+            type="button"
+            onClick={handleExport}
+            disabled={exporting || data.length === 0}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.15 }}
+            className="inline-flex items-center gap-2 px-4 py-3 md:py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 text-white text-sm font-medium shadow-lg shadow-violet-600/20 disabled:opacity-50"
+          >
+            {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            {exporting ? t('reports.exporting') : t('reports.exportButton')}
+          </motion.button>
+
+          <motion.button
+            type="button"
+            onClick={handleExportPdf}
+            disabled={exportingPdf || data.length === 0}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.15 }}
+            className="inline-flex items-center gap-2 px-4 py-3 md:py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 text-white text-sm font-medium shadow-lg shadow-violet-600/20 disabled:opacity-50"
+          >
+            {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+            {exportingPdf ? t('reports.exportingPdf') : t('reports.exportPdfButton')}
+          </motion.button>
+        </div>
       </div>
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}

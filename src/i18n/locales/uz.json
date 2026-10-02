@@ -187,6 +187,8 @@
     "statOvertime": "Ortiqcha ish",
     "exportButton": "Excelga eksport",
     "exporting": "Yuklanmoqda...",
+    "exportPdfButton": "PDF",
+    "exportingPdf": "Yuklanmoqda...",
     "worstFirst": "Avval muammolar",
     "bestFirst": "Avval yaxshilar",
     "details": "Batafsil",
