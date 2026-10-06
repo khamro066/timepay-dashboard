@@ -5,13 +5,15 @@ import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import DeptCompareRow from '../components/DeptCompareRow'
 import FilterBar from '../components/FilterBar'
-import { enumParam, useFilterParams } from '../hooks/useFilterParams'
+import { enumParam, strParam, useFilterParams } from '../hooks/useFilterParams'
 import { useScrollRestoration } from '../hooks/useScrollRestoration'
+import { todayStr } from '../utils/dateRange'
 
-function getDateRange(period, customRange) {
+function getDateRange(period, customRange, selectedDate) {
   if (period === 'Custom') {
     return { date_from: customRange?.date_from || '', date_to: customRange?.date_to || '' }
   }
+  if (period === 'Today') return { date_from: selectedDate, date_to: selectedDate }
   const end = new Date()
   const endStr = end.toISOString().slice(0, 10)
   const start = new Date(end)
@@ -24,6 +26,7 @@ function getDateRange(period, customRange) {
 // restore it — see useFilterParams.
 const FILTER_SPEC = {
   period: enumParam('Month'),
+  day: strParam,
   df: { default: '' },
   dt: { default: '' },
 }
@@ -34,12 +37,13 @@ export default function Departments() {
   const navigate = useNavigate()
   const [f, setF] = useFilterParams(FILTER_SPEC)
   const { period } = f
+  const selectedDate = f.day || todayStr()
   const customRange = useMemo(() => ({ date_from: f.df, date_to: f.dt }), [f.df, f.dt])
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const { date_from, date_to } = getDateRange(period, customRange)
+  const { date_from, date_to } = getDateRange(period, customRange, selectedDate)
   const rangeReady = Boolean(date_from && date_to)
 
   useEffect(() => {
@@ -82,8 +86,13 @@ export default function Departments() {
       <FilterBar
         period={period}
         onPeriodChange={(v) => setF('period', v)}
+        selectedDate={selectedDate}
+        onSelectedDateChange={(d) => setF('day', d)}
+        onDayPresetChange={(d) => setF({ period: 'Today', day: d })}
         customRange={customRange}
         onCustomRangeChange={(r) => setF({ df: r.date_from, dt: r.date_to })}
+        dateFrom={date_from}
+        dateTo={date_to}
       />
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}

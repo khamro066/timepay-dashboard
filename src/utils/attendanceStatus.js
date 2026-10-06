@@ -43,3 +43,21 @@ export function weekdayIndex(dateStr) {
 export function dayOfMonth(dateStr) {
   return Number(dateStr.slice(8, 10))
 }
+
+// Buckets a list of employees into consecutive same-department groups.
+// Expects `employees` to already be sorted by department (ties by name) —
+// both /api/schedule-matrix and the sort Schedule.jsx applies before calling
+// this for the single-day list guarantee that.
+export function groupByDepartment(employees) {
+  const groups = []
+  let current = null
+  for (const emp of employees) {
+    const dept = emp.department || '—'
+    if (!current || current.department !== dept) {
+      current = { department: dept, employees: [] }
+      groups.push(current)
+    }
+    current.employees.push(emp)
+  }
+  return groups
+}

@@ -49,6 +49,7 @@
   },
   "period": {
     "today": "Bugun",
+    "yesterday": "Kecha",
     "week": "Hafta",
     "month": "Oy"
   },

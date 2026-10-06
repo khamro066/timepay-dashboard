@@ -7,9 +7,12 @@ import { useApi } from '../api/useApi'
 import AttendanceBadge from '../components/AttendanceBadge'
 import Avatar from '../components/Avatar'
 import ListNavRow from '../components/ListNavRow'
-import PeriodTabs from '../components/PeriodTabs'
+import PeriodControl from '../components/PeriodControl'
+import { enumParam, strParam, useFilterParams } from '../hooks/useFilterParams'
+import { todayStr } from '../utils/dateRange'
 
-function getDateRange(period) {
+function getDateRange(period, selectedDate) {
+  if (period === 'Today') return { date_from: selectedDate, date_to: selectedDate }
   const end = new Date()
   const endStr = end.toISOString().slice(0, 10)
   const start = new Date(end)
@@ -18,16 +21,27 @@ function getDateRange(period) {
   return { date_from: start.toISOString().slice(0, 10), date_to: endStr }
 }
 
+// Filter state is kept in the URL query string so back/forward and reload
+// restore it — see useFilterParams.
+const FILTER_SPEC = {
+  period: enumParam('Month'),
+  day: strParam,
+}
+
 export default function DepartmentDetail() {
   const { t } = useTranslation()
   const { name } = useParams()
   const department = decodeURIComponent(name)
   const navigate = useNavigate()
   const api = useApi()
-  const [period, setPeriod] = useState('Month')
+  const [f, setF] = useFilterParams(FILTER_SPEC)
+  const { period } = f
+  const selectedDate = f.day || todayStr()
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  const { date_from, date_to } = getDateRange(period, selectedDate)
 
   useEffect(() => {
     let cancelled = false
@@ -36,7 +50,6 @@ export default function DepartmentDetail() {
       setLoading(true)
       setError('')
       try {
-        const { date_from, date_to } = getDateRange(period)
         const res = await api.get('/api/ranking', { params: { date_from, date_to, department } })
         if (!cancelled) {
           // Order by the attendance % we display, not the API's default sort.
@@ -53,7 +66,7 @@ export default function DepartmentDetail() {
     return () => {
       cancelled = true
     }
-  }, [api, period, department])
+  }, [api, date_from, date_to, department])
 
   return (
     <div>
@@ -78,7 +91,17 @@ export default function DepartmentDetail() {
       </motion.h1>
       <p className="text-white/40 text-sm mb-4">{t('departments.employeeCount', { count: data.length })}</p>
 
-      <PeriodTabs period={period} onChange={setPeriod} />
+      <div className="mb-6">
+        <PeriodControl
+          period={period}
+          onPeriodChange={(v) => setF('period', v)}
+          selectedDate={selectedDate}
+          onSelectedDateChange={(d) => setF('day', d)}
+          onDayPresetChange={(d) => setF({ period: 'Today', day: d })}
+          dateFrom={date_from}
+          dateTo={date_to}
+        />
+      </div>
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}
 

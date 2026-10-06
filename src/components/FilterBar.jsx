@@ -2,14 +2,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Archive, ChevronDown, Search, SlidersHorizontal, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import PeriodControl from './PeriodControl'
 import PillGroup from './PillGroup'
-
-const PERIOD_TABS = [
-  { value: 'Today', key: 'period.today' },
-  { value: 'Week', key: 'period.week' },
-  { value: 'Month', key: 'period.month' },
-  { value: 'Custom', key: 'filters.custom' },
-]
 
 function SearchInput({ value, onChange, placeholder }) {
   const { t } = useTranslation()
@@ -95,67 +89,6 @@ function SelectControl({ value, onChange, options, label, allLabel, block = fals
   )
 }
 
-function PeriodControl({ period, onPeriodChange, customRange, onCustomRangeChange }) {
-  const { t } = useTranslation()
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="inline-flex bg-white/5 rounded-xl p-1">
-        {PERIOD_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            onClick={() => onPeriodChange(tab.value)}
-            className="relative px-3 py-3 md:py-1.5 text-sm font-medium"
-          >
-            {period === tab.value && (
-              <motion.div
-                layoutId="filterbar-period-indicator"
-                className="absolute inset-0 rounded-lg bg-violet-600"
-                transition={{ type: 'spring', bounce: 0.2, duration: 0.35 }}
-              />
-            )}
-            <span className={`relative z-10 whitespace-nowrap ${period === tab.value ? 'text-white' : 'text-white/50'}`}>
-              {t(tab.key)}
-            </span>
-          </button>
-        ))}
-      </div>
-      <AnimatePresence initial={false}>
-        {period === 'Custom' && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="flex items-center gap-2 flex-wrap overflow-hidden"
-          >
-            <label className="flex items-center gap-1.5 text-xs text-white/40">
-              {t('filters.dateFrom')}
-              <input
-                type="date"
-                value={customRange?.date_from ?? ''}
-                max={customRange?.date_to || undefined}
-                onChange={(e) => onCustomRangeChange({ ...customRange, date_from: e.target.value })}
-                className="rounded-lg bg-white/5 border border-white/10 px-2.5 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
-            </label>
-            <label className="flex items-center gap-1.5 text-xs text-white/40">
-              {t('filters.dateTo')}
-              <input
-                type="date"
-                value={customRange?.date_to ?? ''}
-                min={customRange?.date_from || undefined}
-                onChange={(e) => onCustomRangeChange({ ...customRange, date_to: e.target.value })}
-                className="rounded-lg bg-white/5 border border-white/10 px-2.5 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
-            </label>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
 export default function FilterBar({
   search,
   onSearchChange,
@@ -168,8 +101,13 @@ export default function FilterBar({
   positionOptions,
   period,
   onPeriodChange,
+  selectedDate,
+  onSelectedDateChange,
+  onDayPresetChange,
   customRange,
   onCustomRangeChange,
+  dateFrom,
+  dateTo,
   sort,
   onSortChange,
   sortOptions,
@@ -231,8 +169,13 @@ export default function FilterBar({
             <PeriodControl
               period={period}
               onPeriodChange={onPeriodChange}
+              selectedDate={selectedDate}
+              onSelectedDateChange={onSelectedDateChange}
+              onDayPresetChange={onDayPresetChange}
               customRange={customRange}
               onCustomRangeChange={onCustomRangeChange}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
             />
           )}
           {showDepartment && (
@@ -268,8 +211,13 @@ export default function FilterBar({
             <PeriodControl
               period={period}
               onPeriodChange={onPeriodChange}
+              selectedDate={selectedDate}
+              onSelectedDateChange={onSelectedDateChange}
+              onDayPresetChange={onDayPresetChange}
               customRange={customRange}
               onCustomRangeChange={onCustomRangeChange}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
             />
           )}
           {(showDepartment || showPosition || showSort || showArchivedToggle) && (

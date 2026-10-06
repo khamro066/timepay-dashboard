@@ -13,11 +13,13 @@ import RankingChart from '../components/RankingChart'
 import ScoreBadge from '../components/ScoreBadge'
 import { boolParam, enumParam, strParam, useFilterParams } from '../hooks/useFilterParams'
 import { useScrollRestoration } from '../hooks/useScrollRestoration'
+import { todayStr } from '../utils/dateRange'
 
-function getDateRange(period, customRange) {
+function getDateRange(period, customRange, selectedDate) {
   if (period === 'Custom') {
     return { date_from: customRange?.date_from || '', date_to: customRange?.date_to || '' }
   }
+  if (period === 'Today') return { date_from: selectedDate, date_to: selectedDate }
   const end = new Date()
   const endStr = end.toISOString().slice(0, 10)
   const start = new Date(end)
@@ -69,6 +71,7 @@ const FILTER_SPEC = {
   sort: enumParam('attendance_desc'),
   archived: boolParam,
   period: enumParam('Month'),
+  day: strParam,
   df: { default: '' },
   dt: { default: '' },
 }
@@ -79,6 +82,7 @@ export default function Ranking() {
   const navigate = useNavigate()
   const [f, setF] = useFilterParams(FILTER_SPEC)
   const { q: search, dept: department, sort, archived: showArchived, period } = f
+  const selectedDate = f.day || todayStr()
   const customRange = useMemo(() => ({ date_from: f.df, date_to: f.dt }), [f.df, f.dt])
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -86,7 +90,7 @@ export default function Ranking() {
   // Row whose attendance-% breakdown is expanded (desktop table only).
   const [expandedId, setExpandedId] = useState(null)
 
-  const { date_from, date_to } = getDateRange(period, customRange)
+  const { date_from, date_to } = getDateRange(period, customRange, selectedDate)
   const rangeReady = Boolean(date_from && date_to)
 
   useEffect(() => {
@@ -170,8 +174,13 @@ export default function Ranking() {
         departmentOptions={departmentOptions}
         period={period}
         onPeriodChange={(v) => setF('period', v)}
+        selectedDate={selectedDate}
+        onSelectedDateChange={(d) => setF('day', d)}
+        onDayPresetChange={(d) => setF({ period: 'Today', day: d })}
         customRange={customRange}
         onCustomRangeChange={(r) => setF({ df: r.date_from, dt: r.date_to })}
+        dateFrom={date_from}
+        dateTo={date_to}
         sort={sort}
         onSortChange={(v) => setF('sort', v)}
         sortOptions={SORT_OPTIONS}

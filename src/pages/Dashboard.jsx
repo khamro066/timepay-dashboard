@@ -6,16 +6,13 @@ import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api/useApi'
 import AttendanceBadge from '../components/AttendanceBadge'
 import Avatar from '../components/Avatar'
-import DateStepper from '../components/DateStepper'
 import DayBreakdownSheet from '../components/DayBreakdownSheet'
 import LegendRow from '../components/LegendRow'
-import PeriodTabs from '../components/PeriodTabs'
+import PeriodControl from '../components/PeriodControl'
 import PillGroup from '../components/PillGroup'
 import RingChart from '../components/RingChart'
-
-function todayStr() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { enumParam, strParam, useFilterParams } from '../hooks/useFilterParams'
+import { todayStr } from '../utils/dateRange'
 
 function getDateRange(period, selectedDate) {
   if (period === 'Today') return { date_from: selectedDate, date_to: selectedDate }
@@ -39,13 +36,21 @@ function topFiveByAttendance(rows) {
   return [...rows].sort((a, b) => (b.attendance_rate ?? -1) - (a.attendance_rate ?? -1)).slice(0, 5)
 }
 
+// Filter state is kept in the URL query string so back/forward and reload
+// restore it — see useFilterParams.
+const FILTER_SPEC = {
+  period: enumParam('Today'),
+  day: strParam,
+  dept: strParam,
+}
+
 export default function Dashboard() {
   const { t } = useTranslation()
   const api = useApi()
   const navigate = useNavigate()
-  const [period, setPeriod] = useState('Today')
-  const [selectedDate, setSelectedDate] = useState(todayStr())
-  const [business, setBusiness] = useState(null)
+  const [f, setF] = useFilterParams(FILTER_SPEC)
+  const { period, dept: business } = f
+  const selectedDate = f.day || todayStr()
   const [businessOptions, setBusinessOptions] = useState([])
   const [latestDate, setLatestDate] = useState(null)
   const [rankRows, setRankRows] = useState([])
@@ -191,20 +196,23 @@ export default function Dashboard() {
 
       {/* Pinned controls: date / period / business stay reachable while scrolling. */}
       <div className="sticky top-0 z-20 -mx-6 mb-4 border-b border-white/[0.06] bg-bg/95 px-6 pt-3 pb-3 backdrop-blur-md md:-mx-8 md:px-8">
-        {period === 'Today' ? (
-          <DateStepper date={selectedDate} onChange={setSelectedDate} maxDate={todayStr()} />
-        ) : (
-          <p className="text-white/40 text-sm">{todayStr()}</p>
-        )}
+        <PeriodControl
+          period={period}
+          onPeriodChange={(v) => setF('period', v)}
+          selectedDate={selectedDate}
+          onSelectedDateChange={(d) => setF('day', d)}
+          onDayPresetChange={(d) => setF({ period: 'Today', day: d })}
+          dateFrom={date_from}
+          dateTo={date_to}
+        />
         {isFallback && (
           <p className="text-amber-300/80 text-xs mt-1.5">{t('dashboard.latestData', { date: effectiveDate })}</p>
         )}
-        <div className="mt-3 flex flex-col gap-2">
-          <PeriodTabs period={period} onChange={setPeriod} className="" />
-          {businessOptions.length > 1 && (
-            <PillGroup options={businessPillOptions} value={business} onChange={setBusiness} />
-          )}
-        </div>
+        {businessOptions.length > 1 && (
+          <div className="mt-3">
+            <PillGroup options={businessPillOptions} value={business} onChange={(v) => setF('dept', v)} />
+          </div>
+        )}
       </div>
 
       {error && <p className="text-red-400 mb-4 text-sm">{t(error)}</p>}

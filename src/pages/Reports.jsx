@@ -12,11 +12,13 @@ import LatenessBars from '../components/LatenessBars'
 import NoteCell from '../components/NoteCell'
 import { boolParam, enumParam, strParam, useFilterParams } from '../hooks/useFilterParams'
 import { useScrollRestoration } from '../hooks/useScrollRestoration'
+import { todayStr } from '../utils/dateRange'
 
-function getDateRange(period, customRange) {
+function getDateRange(period, customRange, selectedDate) {
   if (period === 'Custom') {
     return { date_from: customRange?.date_from || '', date_to: customRange?.date_to || '' }
   }
+  if (period === 'Today') return { date_from: selectedDate, date_to: selectedDate }
   const end = new Date()
   const endStr = end.toISOString().slice(0, 10)
   const start = new Date(end)
@@ -41,9 +43,9 @@ function getISOWeek(date) {
 // rolling window that shifts "as of today" — so a note written any day this
 // week still shows up when "this week" is viewed again later in the same week,
 // and a custom range keeps its own notes every time that same range is picked.
-function getPeriodKey(period, customRange) {
+function getPeriodKey(period, customRange, selectedDate) {
   const today = new Date()
-  if (period === 'Today') return today.toISOString().slice(0, 10)
+  if (period === 'Today') return selectedDate
   if (period === 'Week') {
     const { year, week } = getISOWeek(today)
     return `${year}-W${String(week).padStart(2, '0')}`
@@ -85,6 +87,7 @@ const FILTER_SPEC = {
   dept: strParam,
   archived: boolParam,
   period: enumParam('Month'),
+  day: strParam,
   df: { default: '' },
   dt: { default: '' },
   dir: enumParam('worst'),
@@ -95,6 +98,7 @@ export default function Reports() {
   const api = useApi()
   const [f, setF] = useFilterParams(FILTER_SPEC)
   const { q: search, dept: department, archived: showArchived, period, dir: sortDir } = f
+  const selectedDate = f.day || todayStr()
   const customRange = useMemo(() => ({ date_from: f.df, date_to: f.dt }), [f.df, f.dt])
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -106,9 +110,9 @@ export default function Reports() {
   const [lateness, setLateness] = useState(null)
   const [dayOfWeek, setDayOfWeek] = useState(null)
 
-  const { date_from, date_to } = getDateRange(period, customRange)
+  const { date_from, date_to } = getDateRange(period, customRange, selectedDate)
   const rangeReady = Boolean(date_from && date_to)
-  const periodKey = getPeriodKey(period, customRange)
+  const periodKey = getPeriodKey(period, customRange, selectedDate)
 
   useEffect(() => {
     if (!rangeReady) return
@@ -294,8 +298,13 @@ export default function Reports() {
         departmentOptions={departmentOptions}
         period={period}
         onPeriodChange={(v) => setF('period', v)}
+        selectedDate={selectedDate}
+        onSelectedDateChange={(d) => setF('day', d)}
+        onDayPresetChange={(d) => setF({ period: 'Today', day: d })}
         customRange={customRange}
         onCustomRangeChange={(r) => setF({ df: r.date_from, dt: r.date_to })}
+        dateFrom={date_from}
+        dateTo={date_to}
         showArchived={showArchived}
         onShowArchivedChange={(v) => setF('archived', v)}
         resultShown={filtered.length}

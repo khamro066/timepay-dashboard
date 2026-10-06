@@ -6,6 +6,7 @@ import {
   STATUS_COLORS,
   STATUS_LABEL_KEY,
   dayOfMonth,
+  groupByDepartment,
   weekdayIndex,
 } from '../utils/attendanceStatus'
 import Avatar from './Avatar'
@@ -17,20 +18,6 @@ const LEGEND_LABEL_KEY = { ...STATUS_LABEL_KEY, day_off: 'schedule.legendNeutral
 // Fixed 7 × 26px column tracks for the mobile per-employee calendar grids
 // (and their shared weekday header), so cells stay small and aligned.
 const MOBILE_GRID = 'repeat(7, 1.625rem)'
-
-function groupByDepartment(employees) {
-  const groups = []
-  let current = null
-  for (const emp of employees) {
-    const dept = emp.department || '—'
-    if (!current || current.department !== dept) {
-      current = { department: dept, employees: [] }
-      groups.push(current)
-    }
-    current.employees.push(emp)
-  }
-  return groups
-}
 
 function cellBackground(status) {
   if (status === 'no_data') return 'rgba(255,255,255,0.05)'
